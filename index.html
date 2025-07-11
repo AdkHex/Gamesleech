@@ -260,6 +260,22 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .checkbox-group label {
+            margin-bottom: 0;
+            font-weight: normal;
+        }
     </style>
 </head>
 <body>
@@ -412,6 +428,11 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="note">Note:</label>
+                    <input type="text" id="note" placeholder="Enter special note (e.g., Launch via Chained Together Launcher.bat)">
+                </div>
+                
+                <div class="form-group">
                     <label for="dlcs">DLCs:</label>
                     <textarea id="dlcs" placeholder="Enter DLCs (one per line)"></textarea>
                 </div>
@@ -419,6 +440,11 @@
                 <div class="form-group">
                     <label for="extras">Extras:</label>
                     <textarea id="extras" placeholder="Enter extras (one per line)"></textarea>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="includeCoop">
+                    <label for="includeCoop">Include "How to Play Co-Op" section</label>
                 </div>
             </div>
             
@@ -459,12 +485,53 @@
     </div>
 
     <script>
+        function formatReleaseDate(dateString) {
+    const monthMap = {
+        'jan': 'January', 'jan,': 'January',
+        'feb': 'February', 'feb,': 'February',
+        'mar': 'March', 'mar,': 'March',
+        'apr': 'April', 'apr,': 'April',
+        'may': 'May', 'may,': 'May',
+        'jun': 'June', 'jun,': 'June',
+        'jul': 'July', 'jul,': 'July',
+        'aug': 'August', 'aug,': 'August',
+        'sep': 'September', 'sep,': 'September',
+        'oct': 'October', 'oct,': 'October',
+        'nov': 'November', 'nov,': 'November',
+        'dec': 'December', 'dec,': 'December'
+    };
+
+    // Match patterns like "1 jan, 2022" or "jan 1, 2022"
+    const datePattern = /(\d{1,2})\s*([a-z]{3},)\s*(\d{4})|([a-z]{3},)\s*(\d{1,2})\s*,?\s*(\d{4})/i;
+    const match = dateString.match(datePattern);
+
+    if (match) {
+        let day, month, year;
+        if (match[1]) { // "1 jan, 2022" format
+            day = match[1];
+            month = match[2].toLowerCase();
+            year = match[3];
+        } else { // "jan, 1 2022" format
+            day = match[5];
+            month = match[4].toLowerCase();
+            year = match[6];
+        }
+
+        const fullMonth = monthMap[month] || month.replace(',', '');
+        return `${day} ${fullMonth} ${year}`;
+    }
+
+    // If no pattern matched, return the original string or default
+    return dateString || '1 January 20';
+}
+
         function generateCode() {
             // Get all input values
             const gameName = document.getElementById('gameName').value || 'XXX';
             const developer = document.getElementById('developer').value || '';
             const publisher = document.getElementById('publisher').value || '';
-            const releaseDate = document.getElementById('releaseDate').value || '1 January 20';
+            const releaseDateInput = document.getElementById('releaseDate').value;
+            const releaseDate = formatReleaseDate(releaseDateInput);
             let genre = document.getElementById('genre').value || 'Action, Adventure';
             const size = document.getElementById('size').value || '1.0GB';
             const editionName = document.getElementById('editionName').value;
@@ -478,6 +545,8 @@
             const steamLink = document.getElementById('steamLink').value;
             const ytLink = document.getElementById('ytLink').value;
             const aboutGame = document.getElementById('aboutGame').value;
+            const note = document.getElementById('note').value;
+            const includeCoop = document.getElementById('includeCoop').checked;
             
             // System requirements
             const os = document.getElementById('os').value;
@@ -493,26 +562,72 @@
             const dlcs = document.getElementById('dlcs').value;
             const extras = document.getElementById('extras').value;
             
-            // Process edition version and DLCs
-            let versionInfo = '';
-            if (versionNumber || buildNumber || dlcCount) {
-                versionInfo = '(';
-                if (versionNumber) versionInfo += `v${versionNumber}`;
-                if (buildNumber) versionInfo += ` | build ${buildNumber}`;
-                if (dlcCount) versionInfo += ` + ${dlcCount}DLCs`;
-                versionInfo += ')';
+            // Process edition version and DLCs with new logic
+            let versionInfoParts = [];
+            
+            if (versionNumber) {
+                versionInfoParts.push(`v${versionNumber}`);
             }
             
-            // Generate download title
+            if (buildNumber) {
+                versionInfoParts.push(`build ${buildNumber}`);
+            }
+            
+            if (dlcCount) {
+                versionInfoParts.push(`+ ${dlcCount}DLCs`);
+            }
+            
+            let versionInfo = '';
+            if (versionInfoParts.length > 0) {
+                if (versionInfoParts.length === 1) {
+                    versionInfo = `(${versionInfoParts[0]})`;
+                } else if (versionInfoParts.length === 2) {
+                    // Check if we need to use "|" or "+"
+                    if (versionNumber && buildNumber) {
+                        versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]})`;
+                    } else {
+                        versionInfo = `(${versionInfoParts[0]} ${versionInfoParts[1]})`;
+                    }
+                } else if (versionInfoParts.length === 3) {
+                    versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]} ${versionInfoParts[2]})`;
+                }
+            }
+            
+            // Generate download title with same version info logic
+            let downloadTitleVersionParts = [];
+            
+            if (versionNumber) {
+                downloadTitleVersionParts.push(`v${versionNumber}`);
+            }
+            
+            if (buildNumber) {
+                downloadTitleVersionParts.push(`build${buildNumber}`);
+            }
+            
+            if (dlcCount) {
+                downloadTitleVersionParts.push(`+ ${dlcCount}DLCs`);
+            }
+            
+            let downloadTitleVersionInfo = '';
+            if (downloadTitleVersionParts.length > 0) {
+                if (downloadTitleVersionParts.length === 1) {
+                    downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]})`;
+                } else if (downloadTitleVersionParts.length === 2) {
+                    // Check if we need to use "|" or "+"
+                    if (versionNumber && buildNumber) {
+                        downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${downloadTitleVersionParts[1]})`;
+                    } else {
+                        downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} ${downloadTitleVersionParts[1]})`;
+                    }
+                } else if (downloadTitleVersionParts.length === 3) {
+                    downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${downloadTitleVersionParts[1]} ${downloadTitleVersionParts[2]})`;
+                }
+            }
+            
             let downloadTitle = `Download ${gameName}`;
             if (editionName) downloadTitle += ` - ${editionName} Edition`;
-            if (versionNumber || buildNumber || dlcCount) {
-                downloadTitle += ` (`;
-                if (versionNumber) downloadTitle += `v${versionNumber}`;
-                if (buildNumber) downloadTitle += ` | build${buildNumber}`;
-                if (dlcCount) downloadTitle += ` + ${dlcCount}DLCs`;
-                downloadTitle += `)`;
-            }
+            if (downloadTitleVersionInfo) downloadTitle += ` ${downloadTitleVersionInfo}`;
+            
             document.getElementById('downloadTitle').value = downloadTitle;
             
             // Generate focus keyphrase
@@ -587,16 +702,42 @@ https://www.youtube.com/watch?v=${videoId}
             
             // Process system requirements
             let systemReqList = `<!-- wp:list -->
-<ul class="wp-block-list">`;
+<ul class="wp-block-list">
+`;
             
-            if (os) systemReqList += `\n<!-- wp:list-item -->\n<li><strong>OS</strong>: ${os}</li>\n<!-- /wp:list-item -->`;
-            if (ram) systemReqList += `\n<!-- wp:list-item -->\n<li><strong>RAM</strong>: ${ram}</li>\n<!-- /wp:list-item -->`;
-            if (storage) systemReqList += `\n<!-- wp:list-item -->\n<li><strong>Storage</strong>: ${storage}</li>\n<!-- /wp:list-item -->`;
-            if (directx) systemReqList += `\n<!-- wp:list-item -->\n<li><strong>DirectX</strong>: ${directx}</li>\n<!-- /wp:list-item -->`;
-            if (processor) systemReqList += `\n<!-- wp:list-item -->\n<li><strong>Processor</strong>: ${processor}</li>\n<!-- /wp:list-item -->`;
-            if (graphics) systemReqList += `\n<!-- wp:list-item -->\n<li><strong>Graphics</strong>: ${graphics}</li>\n<!-- /wp:list-item -->`;
+            if (os) systemReqList += `<!-- wp:list-item -->
+<li><strong>OS</strong>: ${os}</li>
+<!-- /wp:list-item -->
+
+`;
+            if (ram) systemReqList += `<!-- wp:list-item -->
+<li><strong>RAM</strong>: ${ram}</li>
+<!-- /wp:list-item -->
+
+`;
+            if (storage) systemReqList += `<!-- wp:list-item -->
+<li><strong>Storage</strong>: ${storage}</li>
+<!-- /wp:list-item -->
+
+`;
+            if (directx) systemReqList += `<!-- wp:list-item -->
+<li><strong>DirectX</strong>: ${directx}</li>
+<!-- /wp:list-item -->
+
+`;
+            if (processor) systemReqList += `<!-- wp:list-item -->
+<li><strong>Processor</strong>: ${processor}</li>
+<!-- /wp:list-item -->
+
+`;
+            if (graphics) systemReqList += `<!-- wp:list-item -->
+<li><strong>Graphics</strong>: ${graphics}</li>
+<!-- /wp:list-item -->
+
+`;
             
-            systemReqList += `\n</ul>\n<!-- /wp:list -->`;
+            systemReqList += `</ul>
+<!-- /wp:list -->`;
             
             // Process optional sections
             let instructionsSection = '';
@@ -608,11 +749,17 @@ https://www.youtube.com/watch?v=${videoId}
 <!-- /wp:heading -->
 
 <!-- wp:list -->
-<ul class="wp-block-list">`;
+<ul class="wp-block-list">
+`;
                     lines.forEach(line => {
-                        instructionsSection += `\n<!-- wp:list-item -->\n<li>${line}</li>\n<!-- /wp:list-item -->`;
+                        instructionsSection += `<!-- wp:list-item -->
+<li>${line}</li>
+<!-- /wp:list-item -->
+
+`;
                     });
-                    instructionsSection += `\n</ul>\n<!-- /wp:list -->`;
+                    instructionsSection += `</ul>
+<!-- /wp:list -->`;
                 }
             }
             
@@ -625,12 +772,26 @@ https://www.youtube.com/watch?v=${videoId}
 <!-- /wp:heading -->
 
 <!-- wp:list -->
-<ul class="wp-block-list">`;
+<ul class="wp-block-list">
+`;
                     lines.forEach(line => {
-                        installationSection += `\n<!-- wp:list-item -->\n<li>${line}</li>\n<!-- /wp:list-item -->`;
+                        installationSection += `<!-- wp:list-item -->
+<li>${line}</li>
+<!-- /wp:list-item -->
+
+`;
                     });
-                    installationSection += `\n</ul>\n<!-- /wp:list -->`;
+                    installationSection += `</ul>
+<!-- /wp:list -->`;
                 }
+            }
+            
+            // Process note
+            let noteSection = '';
+            if (note) {
+                noteSection = `<!-- wp:paragraph -->
+<p><strong><mark style="background-color:rgba(0, 0, 0, 0);color:#e40505" class="has-inline-color">Note</mark></strong>: ${note}</p>
+<!-- /wp:paragraph -->`;
             }
             
             let dlcsSection = '';
@@ -642,11 +803,17 @@ https://www.youtube.com/watch?v=${videoId}
 <!-- /wp:heading -->
 
 <!-- wp:list -->
-<ul class="wp-block-list">`;
+<ul class="wp-block-list">
+`;
                     lines.forEach(line => {
-                        dlcsSection += `\n<!-- wp:list-item -->\n<li>${line}</li>\n<!-- /wp:list-item -->`;
+                        dlcsSection += `<!-- wp:list-item -->
+<li>${line}</li>
+<!-- /wp:list-item -->
+
+`;
                     });
-                    dlcsSection += `\n</ul>\n<!-- /wp:list -->`;
+                    dlcsSection += `</ul>
+<!-- /wp:list -->`;
                 }
             }
             
@@ -659,11 +826,17 @@ https://www.youtube.com/watch?v=${videoId}
 <!-- /wp:heading -->
 
 <!-- wp:list -->
-<ul class="wp-block-list">`;
+<ul class="wp-block-list">
+`;
                     lines.forEach(line => {
-                        extrasSection += `\n<!-- wp:list-item -->\n<li>${line}</li>\n<!-- /wp:list-item -->`;
+                        extrasSection += `<!-- wp:list-item -->
+<li>${line}</li>
+<!-- /wp:list-item -->
+
+`;
                     });
-                    extrasSection += `\n</ul>\n<!-- /wp:list -->`;
+                    extrasSection += `</ul>
+<!-- /wp:list -->`;
                 }
             }
             
@@ -772,6 +945,44 @@ ${ytEmbed}`;
             if (installationSection) {
                 code += `
 ${installationSection}`;
+            }
+
+            // Add note section after installation if both exist
+            if (installationSection && noteSection) {
+                code += `
+${noteSection}`;
+            }
+            // Add note section after "How to Download" if there's no installation
+            else if (noteSection && !installationSection) {
+                code += `
+${noteSection}`;
+            }
+
+            // Add Co-Op section if checked
+            if (includeCoop) {
+                code += `
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">How to Play Co-Op?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li>Copy the content of online-fix folder to game folder</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Launch Steam &gt; Go to your profile.</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Run the game using ChainedTogether.exe.<br><strong>Server creation</strong>:</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li>Play > Host a game > Choose settings > Create session > Shift + TAB > Invite friends and wait for them to connect.</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->`;
             }
 
             code += `
