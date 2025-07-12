@@ -260,22 +260,6 @@
                 grid-template-columns: 1fr;
             }
         }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .checkbox-group input[type="checkbox"] {
-            width: auto;
-            margin-right: 10px;
-        }
-        
-        .checkbox-group label {
-            margin-bottom: 0;
-            font-weight: normal;
-        }
     </style>
 </head>
 <body>
@@ -442,9 +426,15 @@
                     <textarea id="extras" placeholder="Enter extras (one per line)"></textarea>
                 </div>
                 
-                <div class="checkbox-group">
-                    <input type="checkbox" id="includeCoop">
-                    <label for="includeCoop">Include "How to Play Co-Op" section</label>
+                <div class="form-group">
+                    <h3 class="section-title">How to Play Co-Op?</h3>
+                    <label for="onlineFix">Online-Fix Instructions (one per line):</label>
+                    <textarea id="onlineFix" placeholder="Enter Online-Fix instructions (one per line)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="serverCreation">Server Creation Instructions (one per line):</label>
+                    <textarea id="serverCreation" placeholder="Enter server creation instructions (one per line)"></textarea>
                 </div>
             </div>
             
@@ -486,47 +476,44 @@
 
     <script>
         function formatReleaseDate(dateString) {
-    const monthMap = {
-        'jan': 'January', 'jan,': 'January',
-        'feb': 'February', 'feb,': 'February',
-        'mar': 'March', 'mar,': 'March',
-        'apr': 'April', 'apr,': 'April',
-        'may': 'May', 'may,': 'May',
-        'jun': 'June', 'jun,': 'June',
-        'jul': 'July', 'jul,': 'July',
-        'aug': 'August', 'aug,': 'August',
-        'sep': 'September', 'sep,': 'September',
-        'oct': 'October', 'oct,': 'October',
-        'nov': 'November', 'nov,': 'November',
-        'dec': 'December', 'dec,': 'December'
-    };
+            const monthMap = {
+                'jan': 'January', 'jan,': 'January',
+                'feb': 'February', 'feb,': 'February',
+                'mar': 'March', 'mar,': 'March',
+                'apr': 'April', 'apr,': 'April',
+                'may': 'May', 'may,': 'May',
+                'jun': 'June', 'jun,': 'June',
+                'jul': 'July', 'jul,': 'July',
+                'aug': 'August', 'aug,': 'August',
+                'sep': 'September', 'sep,': 'September',
+                'oct': 'October', 'oct,': 'October',
+                'nov': 'November', 'nov,': 'November',
+                'dec': 'December', 'dec,': 'December'
+            };
 
-    // Match patterns like "1 jan, 2022" or "jan 1, 2022"
-    const datePattern = /(\d{1,2})\s*([a-z]{3},)\s*(\d{4})|([a-z]{3},)\s*(\d{1,2})\s*,?\s*(\d{4})/i;
-    const match = dateString.match(datePattern);
+            const datePattern = /(\d{1,2})\s*([a-z]{3},)\s*(\d{4})|([a-z]{3},)\s*(\d{1,2})\s*,?\s*(\d{4})/i;
+            const match = dateString.match(datePattern);
 
-    if (match) {
-        let day, month, year;
-        if (match[1]) { // "1 jan, 2022" format
-            day = match[1];
-            month = match[2].toLowerCase();
-            year = match[3];
-        } else { // "jan, 1 2022" format
-            day = match[5];
-            month = match[4].toLowerCase();
-            year = match[6];
+            if (match) {
+                let day, month, year;
+                if (match[1]) {
+                    day = match[1];
+                    month = match[2].toLowerCase();
+                    year = match[3];
+                } else {
+                    day = match[5];
+                    month = match[4].toLowerCase();
+                    year = match[6];
+                }
+
+                const fullMonth = monthMap[month] || month.replace(',', '');
+                return `${day} ${fullMonth} ${year}`;
+            }
+
+            return dateString || '1 January 20';
         }
 
-        const fullMonth = monthMap[month] || month.replace(',', '');
-        return `${day} ${fullMonth} ${year}`;
-    }
-
-    // If no pattern matched, return the original string or default
-    return dateString || '1 January 20';
-}
-
         function generateCode() {
-            // Get all input values
             const gameName = document.getElementById('gameName').value || 'XXX';
             const developer = document.getElementById('developer').value || '';
             const publisher = document.getElementById('publisher').value || '';
@@ -546,9 +533,9 @@
             const ytLink = document.getElementById('ytLink').value;
             const aboutGame = document.getElementById('aboutGame').value;
             const note = document.getElementById('note').value;
-            const includeCoop = document.getElementById('includeCoop').checked;
+            const onlineFix = document.getElementById('onlineFix').value;
+            const serverCreation = document.getElementById('serverCreation').value;
             
-            // System requirements
             const os = document.getElementById('os').value;
             const ram = document.getElementById('ram').value;
             const storage = document.getElementById('storage').value;
@@ -556,33 +543,22 @@
             const processor = document.getElementById('processor').value;
             const graphics = document.getElementById('graphics').value;
             
-            // Optional sections
             const instructions = document.getElementById('instructions').value;
             const installation = document.getElementById('installation').value;
             const dlcs = document.getElementById('dlcs').value;
             const extras = document.getElementById('extras').value;
             
-            // Process edition version and DLCs with new logic
             let versionInfoParts = [];
             
-            if (versionNumber) {
-                versionInfoParts.push(`v${versionNumber}`);
-            }
-            
-            if (buildNumber) {
-                versionInfoParts.push(`build ${buildNumber}`);
-            }
-            
-            if (dlcCount) {
-                versionInfoParts.push(`+ ${dlcCount}DLCs`);
-            }
+            if (versionNumber) versionInfoParts.push(`v${versionNumber}`);
+            if (buildNumber) versionInfoParts.push(`build ${buildNumber}`);
+            if (dlcCount) versionInfoParts.push(`+ ${dlcCount}DLCs`);
             
             let versionInfo = '';
             if (versionInfoParts.length > 0) {
                 if (versionInfoParts.length === 1) {
                     versionInfo = `(${versionInfoParts[0]})`;
                 } else if (versionInfoParts.length === 2) {
-                    // Check if we need to use "|" or "+"
                     if (versionNumber && buildNumber) {
                         versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]})`;
                     } else {
@@ -593,27 +569,17 @@
                 }
             }
             
-            // Generate download title with same version info logic
             let downloadTitleVersionParts = [];
             
-            if (versionNumber) {
-                downloadTitleVersionParts.push(`v${versionNumber}`);
-            }
-            
-            if (buildNumber) {
-                downloadTitleVersionParts.push(`build${buildNumber}`);
-            }
-            
-            if (dlcCount) {
-                downloadTitleVersionParts.push(`+ ${dlcCount}DLCs`);
-            }
+            if (versionNumber) downloadTitleVersionParts.push(`v${versionNumber}`);
+            if (buildNumber) downloadTitleVersionParts.push(`build${buildNumber}`);
+            if (dlcCount) downloadTitleVersionParts.push(`+ ${dlcCount}DLCs`);
             
             let downloadTitleVersionInfo = '';
             if (downloadTitleVersionParts.length > 0) {
                 if (downloadTitleVersionParts.length === 1) {
                     downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]})`;
                 } else if (downloadTitleVersionParts.length === 2) {
-                    // Check if we need to use "|" or "+"
                     if (versionNumber && buildNumber) {
                         downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${downloadTitleVersionParts[1]})`;
                     } else {
@@ -630,22 +596,18 @@
             
             document.getElementById('downloadTitle').value = downloadTitle;
             
-            // Generate focus keyphrase
             const focusKeyphrase = `Download ${gameName}`;
             document.getElementById('focusKeyphrase').value = focusKeyphrase;
             
-            // Generate slug
             let slug = gameName.toLowerCase()
                 .replace(/[^\w\s]/gi, '')
                 .replace(/\s+/g, '-')
                 .replace(/-+/g, '-');
             document.getElementById('slug').value = slug;
             
-            // Generate image renamer
             const imageRenamer = `download-${slug}.webp`;
             document.getElementById('imageRenamer').value = imageRenamer;
             
-            // Process developer/publisher text with new logic
             let devPubText = '';
             if (developer && publisher) {
                 if (developer === publisher) {
@@ -659,7 +621,6 @@
                 devPubText = `published by ${publisher}`;
             }
             
-            // Process genre
             let formattedGenre = genre;
             let genreLinks = [];
             if (genre.includes(',')) {
@@ -680,7 +641,6 @@
                 genreLinks = [`<a href="https://gamesleech.com/genre/${genre.toLowerCase().replace(/\s+/g, '-')}/">${genre}</a>`];
             }
             
-            // Process YouTube link
             let ytEmbed = '';
             if (ytLink) {
                 let videoId = ytLink;
@@ -700,46 +660,32 @@ https://www.youtube.com/watch?v=${videoId}
                 }
             }
             
-            // Process system requirements
             let systemReqList = `<!-- wp:list -->
-<ul class="wp-block-list">
-`;
-            
-            if (os) systemReqList += `<!-- wp:list-item -->
+<ul class="wp-block-list"><!-- wp:list-item -->
 <li><strong>OS</strong>: ${os}</li>
 <!-- /wp:list-item -->
 
-`;
-            if (ram) systemReqList += `<!-- wp:list-item -->
+<!-- wp:list-item -->
 <li><strong>RAM</strong>: ${ram}</li>
 <!-- /wp:list-item -->
 
-`;
-            if (storage) systemReqList += `<!-- wp:list-item -->
+<!-- wp:list-item -->
 <li><strong>Storage</strong>: ${storage}</li>
 <!-- /wp:list-item -->
 
-`;
-            if (directx) systemReqList += `<!-- wp:list-item -->
+<!-- wp:list-item -->
 <li><strong>DirectX</strong>: ${directx}</li>
 <!-- /wp:list-item -->
 
-`;
-            if (processor) systemReqList += `<!-- wp:list-item -->
+<!-- wp:list-item -->
 <li><strong>Processor</strong>: ${processor}</li>
 <!-- /wp:list-item -->
 
-`;
-            if (graphics) systemReqList += `<!-- wp:list-item -->
+<!-- wp:list-item -->
 <li><strong>Graphics</strong>: ${graphics}</li>
-<!-- /wp:list-item -->
-
-`;
-            
-            systemReqList += `</ul>
+<!-- /wp:list-item --></ul>
 <!-- /wp:list -->`;
             
-            // Process optional sections
             let instructionsSection = '';
             if (instructions) {
                 const lines = instructions.split('\n').filter(line => line.trim() !== '');
@@ -749,16 +695,9 @@ https://www.youtube.com/watch?v=${videoId}
 <!-- /wp:heading -->
 
 <!-- wp:list -->
-<ul class="wp-block-list">
-`;
-                    lines.forEach(line => {
-                        instructionsSection += `<!-- wp:list-item -->
-<li>${line}</li>
-<!-- /wp:list-item -->
-
-`;
-                    });
-                    instructionsSection += `</ul>
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li></li>
+<!-- /wp:list-item --></ul>
 <!-- /wp:list -->`;
                 }
             }
@@ -772,26 +711,22 @@ https://www.youtube.com/watch?v=${videoId}
 <!-- /wp:heading -->
 
 <!-- wp:list -->
-<ul class="wp-block-list">
-`;
-                    lines.forEach(line => {
-                        installationSection += `<!-- wp:list-item -->
-<li>${line}</li>
-<!-- /wp:list-item -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li></li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
 
 `;
-                    });
-                    installationSection += `</ul>
-<!-- /wp:list -->`;
                 }
             }
             
-            // Process note
             let noteSection = '';
             if (note) {
                 noteSection = `<!-- wp:paragraph -->
 <p><strong><mark style="background-color:rgba(0, 0, 0, 0);color:#e40505" class="has-inline-color">Note</mark></strong>: ${note}</p>
-<!-- /wp:paragraph -->`;
+<!-- /wp:paragraph -->
+
+`;
             }
             
             let dlcsSection = '';
@@ -803,16 +738,9 @@ https://www.youtube.com/watch?v=${videoId}
 <!-- /wp:heading -->
 
 <!-- wp:list -->
-<ul class="wp-block-list">
-`;
-                    lines.forEach(line => {
-                        dlcsSection += `<!-- wp:list-item -->
-<li>${line}</li>
-<!-- /wp:list-item -->
-
-`;
-                    });
-                    dlcsSection += `</ul>
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li></li>
+<!-- /wp:list-item --></ul>
 <!-- /wp:list -->`;
                 }
             }
@@ -826,27 +754,80 @@ https://www.youtube.com/watch?v=${videoId}
 <!-- /wp:heading -->
 
 <!-- wp:list -->
-<ul class="wp-block-list">
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li></li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->`;
+                }
+            }
+            
+            let coopSection = '';
+            const onlineFixLines = onlineFix ? onlineFix.split('\n').filter(line => line.trim() !== '') : [];
+            const serverCreationLines = serverCreation ? serverCreation.split('\n').filter(line => line.trim() !== '') : [];
+            
+            if (onlineFixLines.length > 0 || serverCreationLines.length > 0) {
+                coopSection = `<!-- wp:heading -->
+<h2 class="wp-block-heading">How to Play Co-Op?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">`;
+                
+                if (onlineFixLines.length > 0) {
+                    for (let i = 0; i < onlineFixLines.length - 1; i++) {
+                        coopSection += `<!-- wp:list-item -->
+<li>${onlineFixLines[i]}</li>
+<!-- /wp:list-item -->
+
 `;
-                    lines.forEach(line => {
-                        extrasSection += `<!-- wp:list-item -->
+                    }
+                    
+                    if (serverCreationLines.length > 0) {
+                        coopSection += `<!-- wp:list-item -->
+<li>${onlineFixLines[onlineFixLines.length - 1]}<br><strong>Server creation</strong>:</li>
+<!-- /wp:list-item -->
+
+`;
+                        
+                        serverCreationLines.forEach(line => {
+                            coopSection += `<!-- wp:list-item -->
+<li>${line}</li>
+<!-- /wp:list-item -->
+
+`;
+                        });
+                    } else {
+                        coopSection += `<!-- wp:list-item -->
+<li>${onlineFixLines[onlineFixLines.length - 1]}</li>
+<!-- /wp:list-item -->
+
+`;
+                    }
+                } else if (serverCreationLines.length > 0) {
+                    coopSection += `<!-- wp:list-item -->
+<li><strong>Server creation</strong>:</li>
+<!-- /wp:list-item -->
+
+`;
+                    
+                    serverCreationLines.forEach(line => {
+                        coopSection += `<!-- wp:list-item -->
 <li>${line}</li>
 <!-- /wp:list-item -->
 
 `;
                     });
-                    extrasSection += `</ul>
-<!-- /wp:list -->`;
                 }
+                
+                coopSection += `</ul>
+<!-- /wp:list -->`;
             }
             
-            // Process platform links
             let platformLinks = [];
             if (epicLink) platformLinks.push(`<a href="${epicLink}" target="_blank" rel="noreferrer noopener nofollow">Epic Games</a>`);
             if (gogLink) platformLinks.push(`<a href="${gogLink}" target="_blank" rel="noreferrer noopener nofollow">GOG</a>`);
             if (steamLink) platformLinks.push(`<a href="${steamLink}" target="_blank" rel="noreferrer noopener nofollow">Steam</a>`);
             
-            // Generate the final code with exact spacing
             let editionText = editionName ? `${editionName} Edition ` : '';
             let code = `<!-- wp:paragraph -->
 <p>Download <strong>${gameName}</strong> PC Game. Here is a direct link to download ${gameName} ${editionText}latest version ${versionInfo} for free. ${gameName} is ${devPubText}. It was released on ${releaseDate} for Windows PC and is considered one of the best in the ${formattedGenre} genre.</p>
@@ -900,16 +881,17 @@ https://www.youtube.com/watch?v=${videoId}
             }
 
             code += `</ul>
-<!-- /wp:list -->`;
+<!-- /wp:list -->
+
+`;
 
             if (ytEmbed) {
-                code += `
-${ytEmbed}`;
+                code += `${ytEmbed}
+
+`;
             }
 
-            code += `
-
-<!-- wp:heading {"textAlign":"center","className":"dl_head"} -->
+            code += `<!-- wp:heading {"textAlign":"center","className":"dl_head"} -->
 <h2 class="wp-block-heading has-text-align-center dl_head">${downloadTitle} for Free</h2>
 <!-- /wp:heading -->
 
@@ -919,9 +901,11 @@ ${ytEmbed}`;
 [su_spoiler class="file-spoiler" title="Download as File" icon="arrow" style="fancy"]
 <!-- /wp:shortcode -->
 
-<!-- wp:paragraph -->
-<p></p>
-<!-- /wp:paragraph -->
+<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
+<div class="wp-block-buttons"><!-- wp:button {"className":"download_file"} -->
+<div class="wp-block-button download_file"><a class="wp-block-button__link wp-element-button" href="#" target="_blank" rel="noreferrer noopener nofollow">Download Zip (1GB)</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons -->
 
 <!-- wp:shortcode -->
 [/su_spoiler]
@@ -940,91 +924,55 @@ ${ytEmbed}`;
 
 <!-- wp:paragraph {"className":"also_read"} -->
 <p class="also_read"><a href="https://gamesleech.com/download-installation-guide/">How to Download &amp; Install Games from GamesLeech?</a> </p>
-<!-- /wp:paragraph -->`;
+<!-- /wp:paragraph -->
+
+`;
 
             if (installationSection) {
-                code += `
-${installationSection}`;
+                code += `${installationSection}`;
             }
 
-            // Add note section after installation if both exist
-            if (installationSection && noteSection) {
-                code += `
-${noteSection}`;
-            }
-            // Add note section after "How to Download" if there's no installation
-            else if (noteSection && !installationSection) {
-                code += `
-${noteSection}`;
+            if (noteSection) {
+                code += `${noteSection}`;
             }
 
-            // Add Co-Op section if checked
-            if (includeCoop) {
-                code += `
+            if (coopSection) {
+                code += `${coopSection}
 
-<!-- wp:heading -->
-<h2 class="wp-block-heading">How to Play Co-Op?</h2>
-<!-- /wp:heading -->
-
-<!-- wp:list -->
-<ul class="wp-block-list"><!-- wp:list-item -->
-<li>Copy the content of online-fix folder to game folder</li>
-<!-- /wp:list-item -->
-
-<!-- wp:list-item -->
-<li>Launch Steam &gt; Go to your profile.</li>
-<!-- /wp:list-item -->
-
-<!-- wp:list-item -->
-<li>Run the game using ChainedTogether.exe.<br><strong>Server creation</strong>:</li>
-<!-- /wp:list-item -->
-
-<!-- wp:list-item -->
-<li>Play > Host a game > Choose settings > Create session > Shift + TAB > Invite friends and wait for them to connect.</li>
-<!-- /wp:list-item --></ul>
-<!-- /wp:list -->`;
+`;
             }
 
-            code += `
-
-<!-- wp:shortcode -->
+            code += `<!-- wp:shortcode -->
 [su_spoiler class="description-spoiler" title="Description" icon="plus" style="fancy"]
-<!-- /wp:shortcode -->`;
+<!-- /wp:shortcode -->
+
+`;
 
             if (instructionsSection) {
-                code += `
-${instructionsSection}`;
+                code += `${instructionsSection}
+
+`;
             }
 
             if (dlcsSection) {
-                code += `
-${dlcsSection}`;
+                code += `${dlcsSection}
+
+`;
             }
 
             if (extrasSection) {
-                code += `
-${extrasSection}`;
+                code += `${extrasSection}
+
+`;
             }
 
-            code += `
-
-<!-- wp:heading -->
+            code += `<!-- wp:heading -->
 <h2 class="wp-block-heading">About Game</h2>
-<!-- /wp:heading -->`;
+<!-- /wp:heading -->
 
-            if (aboutGame) {
-                code += `
 <!-- wp:paragraph -->
-<p>${aboutGame}</p>
-<!-- /wp:paragraph -->`;
-            } else {
-                code += `
-<!-- wp:paragraph -->
-<p></p>
-<!-- /wp:paragraph -->`;
-            }
-
-            code += `
+<p>${aboutGame || ''}</p>
+<!-- /wp:paragraph -->
 
 <!-- wp:heading -->
 <h2 class="wp-block-heading">System Requirements</h2>
@@ -1040,7 +988,6 @@ ${systemReqList}
 <p></p>
 <!-- /wp:paragraph -->`;
 
-            // Output the generated code
             document.getElementById('outputCode').value = code;
         }
         
