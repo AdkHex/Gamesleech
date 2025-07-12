@@ -852,12 +852,14 @@ https://www.youtube.com/watch?v=${videoId}
 
             if (publisher) {
                 code += `
+
 <!-- wp:list-item -->
 <li><strong>Publisher</strong>: ${publisher}</li>
 <!-- /wp:list-item -->`;
             }
 
             code += `
+
 <!-- wp:list-item -->
 <li><strong>Size</strong>: ${size}</li>
 <!-- /wp:list-item -->
@@ -868,6 +870,7 @@ https://www.youtube.com/watch?v=${videoId}
 
             if (source) {
                 code += `
+
 <!-- wp:list-item -->
 <li><strong>Source</strong>: ${source}</li>
 <!-- /wp:list-item -->`;
@@ -875,6 +878,7 @@ https://www.youtube.com/watch?v=${videoId}
 
             if (platformLinks.length > 0) {
                 code += `
+                
 <!-- wp:list-item -->
 <li><strong>Available on</strong>: ${platformLinks.join(', ')}</li>
 <!-- /wp:list-item -->`;
