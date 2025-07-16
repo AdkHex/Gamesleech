@@ -1,1074 +1,993 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WordPress Game Post Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        :root {
-            --primary-color: #2B2853;
-            --primary-hover: #1E1A3F;
-            --success-color: #2ecc71;
-            --light-bg: #f9f9f9;
-            --lighter-bg: #f0f0f0;
-            --border-color: #ddd;
-            --text-color: #333;
-            --heading-color: #2B2853;
+      :root {
+        --bg-color: #1a202c;
+        --card-bg: #2d3748;
+        --input-bg: #262f40;
+        --primary-accent: #38b2ac;
+        --primary-hover: #4fd1c5;
+        --secondary-accent: #4a5568;
+        --secondary-hover: #606b7f;
+        --success-color: #38a169;
+        --heading-color: #e2e8f0;
+        --text-color: #a0aec0;
+        --border-color: #4a5568;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Lexend", system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+        color: var(--text-color);
+        background-color: var(--bg-color);
+        padding: 20px;
+      }
+
+      h1,
+      h2,
+      h3,
+      label {
+        color: var(--heading-color);
+        margin-bottom: 15px;
+      }
+
+      label,
+      .section-title,
+      .output-box h3,
+      .header h1 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .container {
+        display: flex;
+        gap: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .input-section,
+      .output-section {
+        flex: 1;
+        background-color: var(--card-bg);
+        padding: 25px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        font-weight: 400;
+        font-size: 0.9rem;
+      }
+
+      input[type="text"],
+      textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 14px;
+        background-color: var(--input-bg);
+        color: var(--heading-color);
+        transition: all 0.2s ease-in-out;
+        font-family: "Lexend", sans-serif;
+      }
+
+      input[type="text"]::placeholder,
+      textarea::placeholder {
+        color: var(--text-color);
+        opacity: 0.8;
+      }
+
+      input[type="text"]:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary-accent);
+        box-shadow: 0 0 0 3px rgba(56, 178, 172, 0.3);
+      }
+
+      textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+
+      button {
+        background-color: var(--primary-accent);
+        color: #ffffff;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        display: block;
+        margin: 25px auto;
+        width: 220px;
+        transition: all 0.2s ease-in-out;
+        font-family: "Lexend", sans-serif;
+      }
+
+      button:hover {
+        background-color: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      button.copied {
+        background-color: var(--success-color);
+      }
+
+      #outputCode {
+        width: 100%;
+        height: 300px;
+        font-family: "SF Mono", "Consolas", "Monaco", monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+        line-height: 1.5;
+      }
+
+      .optional-section {
+        background-color: rgba(0, 0, 0, 0.15);
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid var(--border-color);
+      }
+
+      .section-title {
+        font-weight: 600;
+        color: var(--heading-color);
+        font-size: 18px;
+      }
+
+      .req-fields,
+      .edition-version,
+      .two-column,
+      .three-column {
+        display: grid;
+        gap: 15px;
+      }
+
+      .req-fields {
+        grid-template-columns: 1fr 1fr;
+      }
+      .edition-version {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .two-column {
+        grid-template-columns: 1fr 1fr;
+      }
+      .three-column {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+
+      .output-box {
+        margin-top: 25px;
+        padding: 20px;
+        background-color: var(--bg-color);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+      }
+
+      .output-box:first-child {
+        margin-top: 0;
+      }
+
+      .output-box h3 {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .output-box input {
+        background-color: var(--input-bg);
+        font-family: "SF Mono", "Consolas", "Monaco", monospace;
+        margin-bottom: 15px;
+      }
+
+      .output-box button {
+        margin: 10px 0 0;
+        width: 100%;
+        background-color: var(--secondary-accent);
+      }
+
+      .output-box button:hover {
+        background-color: var(--secondary-hover);
+      }
+
+      .output-box button.copied {
+        background-color: var(--success-color);
+      }
+
+      .header {
+        text-align: center;
+        padding: 40px 20px;
+        margin-bottom: 40px;
+        background: linear-gradient(
+          180deg,
+          rgba(45, 55, 72, 0.2) 0%,
+          rgba(26, 32, 44, 0.3) 100%
+        );
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+      }
+
+      .header h1 {
+        font-size: 36px;
+        justify-content: center;
+        font-weight: 700;
+        margin-bottom: 15px;
+      }
+
+      .header p {
+        color: var(--text-color);
+        font-size: 18px;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(56, 178, 172, 0.4);
         }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        70% {
+          transform: scale(1.02);
+          box-shadow: 0 0 0 12px rgba(56, 178, 172, 0);
         }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: var(--text-color);
-            background-color: #f5f7fa;
-            padding: 20px;
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(56, 178, 172, 0);
         }
-        
-        h1, h2, h3 {
-            color: var(--heading-color);
-            margin-bottom: 15px;
-        }
-        
+      }
+
+      #generateBtn {
+        animation: pulse 2.5s infinite;
+      }
+
+      #generateBtn:hover {
+        animation: none;
+      }
+
+      @media (max-width: 1200px) {
         .container {
-            display: flex;
-            gap: 30px;
-            max-width: 1400px;
-            margin: 0 auto;
+          flex-direction: column;
         }
-        
-        .input-section {
-            flex: 1;
-            background-color: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        
-        .output-section {
-            flex: 1;
-            background-color: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--heading-color);
-        }
-        
-        input[type="text"], textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border 0.3s;
-        }
-        
-        input[type="text"]:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(43, 40, 83, 0.2);
-        }
-        
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            display: block;
-            margin: 25px auto;
-            width: 220px;
-            transition: all 0.3s;
-        }
-        
-        button:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        button.copied {
-            background-color: var(--success-color);
-        }
-        
-        #outputCode {
-            width: 100%;
-            height: 300px;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 13px;
-            white-space: pre-wrap;
-            background-color: #f8f9fa;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            overflow-y: auto;
-            line-height: 1.5;
-        }
-        
-        .optional-section {
-            background-color: var(--light-bg);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .section-title {
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--heading-color);
-            font-size: 18px;
-        }
-        
-        .req-fields {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .req-field {
-            margin-bottom: 15px;
-        }
-        
-        .edition-version {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-        }
-        
-        .output-box {
-            margin-top: 25px;
-            padding: 20px;
-            background-color: var(--lighter-bg);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .output-box h3 {
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-        
-        .output-box input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background-color: white;
-            font-family: 'Consolas', 'Monaco', monospace;
-        }
-        
-        .output-box button {
-            margin: 10px 0 0;
-            width: 100%;
-        }
-        
-        .two-column {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
+        .edition-version,
         .three-column {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
+          grid-template-columns: 1fr 1fr;
         }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding: 15px;
         }
-        
+        .req-fields,
+        .two-column,
+        .edition-version,
+        .three-column {
+          grid-template-columns: 1fr;
+        }
         .header h1 {
-            font-size: 28px;
-            color: var(--heading-color);
-            margin-bottom: 10px;
+          font-size: 28px;
         }
-        
         .header p {
-            color: #666;
+          font-size: 16px;
         }
-        
-        /* Generate Button Animation */
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(43, 40, 83, 0.4);
-            }
-            70% {
-                transform: scale(1.02);
-                box-shadow: 0 0 0 10px rgba(43, 40, 83, 0);
-            }
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(43, 40, 83, 0);
-            }
-        }
-        
-        #generateBtn {
-            animation: pulse 2s infinite;
-        }
-        
-        #generateBtn:hover {
-            animation: none;
-        }
-        
-        @media (max-width: 1200px) {
-            .container {
-                flex-direction: column;
-            }
-            
-            .edition-version {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .three-column {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .req-fields, .two-column {
-                grid-template-columns: 1fr;
-            }
-            
-            .edition-version, .three-column {
-                grid-template-columns: 1fr;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="header">
-        <h1>WordPress Game Post Generator</h1>
-        <p>Generate complete WordPress post code for game downloads with all required sections</p>
+      <h1>🎮 Game Post Generator 🎮</h1>
+      <p> © blackHAWK</p>
     </div>
-    
+
     <div class="container">
-        <div class="input-section">
-            <div class="two-column">
-                <div class="form-group">
-                    <label for="gameName">Game Name:</label>
-                    <input type="text" id="gameName" placeholder="Enter game name">
-                </div>
-                
-                <div class="form-group">
-                    <label for="developer">Developer:</label>
-                    <input type="text" id="developer" placeholder="Enter developer name">
-                </div>
-            </div>
-            
-            <div class="two-column">
-                <div class="form-group">
-                    <label for="publisher">Publisher:</label>
-                    <input type="text" id="publisher" placeholder="Enter publisher name">
-                </div>
-                
-                <div class="form-group">
-                    <label for="releaseDate">Released:</label>
-                    <input type="text" id="releaseDate" placeholder="e.g., 1 January 20">
-                </div>
-            </div>
-            
-            <div class="two-column">
-                <div class="form-group">
-                    <label for="genre">Genre:</label>
-                    <input type="text" id="genre" placeholder="e.g., Action, Adventure">
-                </div>
-                
-                <div class="form-group">
-                    <label for="size">Size:</label>
-                    <input type="text" id="size" placeholder="e.g., 1.0GB">
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Version Information:</label>
-                <div class="edition-version">
-                    <div>
-                        <label for="editionName">Edition Name:</label>
-                        <input type="text" id="editionName" placeholder="e.g., Hawk">
-                    </div>
-                    <div>
-                        <label for="versionNumber">Version Number:</label>
-                        <input type="text" id="versionNumber" placeholder="e.g., 2.0.99.88">
-                    </div>
-                    <div>
-                        <label for="buildNumber">Build Number:</label>
-                        <input type="text" id="buildNumber" placeholder="e.g., 372837389">
-                    </div>
-                    <div>
-                        <label for="dlcCount">DLC Count:</label>
-                        <input type="text" id="dlcCount" placeholder="e.g., 32">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="two-column">
-                <div class="form-group">
-                    <label for="editionType">Edition Type:</label>
-                    <input type="text" id="editionType" placeholder="e.g., Repack, Pre-installed, GOG Installer">
-                </div>
-                
-                <div class="form-group">
-                    <label for="source">Source:</label>
-                    <input type="text" id="source" placeholder="Enter source if available">
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Available On:</label>
-                <div class="three-column">
-                    <div>
-                        <label for="epicLink">Epic Games URL:</label>
-                        <input type="text" id="epicLink" placeholder="https://gamesleech.com/platform/epic-games/">
-                    </div>
-                    <div>
-                        <label for="gogLink">GOG URL:</label>
-                        <input type="text" id="gogLink" placeholder="https://gamesleech.com/platform/gog/">
-                    </div>
-                    <div>
-                        <label for="steamLink">Steam URL:</label>
-                        <input type="text" id="steamLink" placeholder="https://gamesleech.com/platform/steam/">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="ytLink">YouTube Embed Link:</label>
-                <input type="text" id="ytLink" placeholder="Enter YouTube video ID or URL">
-            </div>
-            
-            <div class="form-group">
-                <label for="aboutGame">About Game:</label>
-                <textarea id="aboutGame" placeholder="Enter game description"></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label>System Requirements:</label>
-                <div class="req-fields">
-                    <div class="req-field">
-                        <label for="os">OS:</label>
-                        <input type="text" id="os" placeholder="e.g., Windows 10 64-bit" value="Windows 10 64-bit">
-                    </div>
-                    <div class="req-field">
-                        <label for="ram">RAM:</label>
-                        <input type="text" id="ram" placeholder="e.g., 8 GB" value="8 GB">
-                    </div>
-                    <div class="req-field">
-                        <label for="storage">Storage:</label>
-                        <input type="text" id="storage" placeholder="e.g., 100 GB" value="100 GB">
-                    </div>
-                    <div class="req-field">
-                        <label for="directx">DirectX:</label>
-                        <input type="text" id="directx" placeholder="e.g., Version 11" value="Version 11">
-                    </div>
-                    <div class="req-field">
-                        <label for="processor">Processor:</label>
-                        <input type="text" id="processor" placeholder="Enter processor requirement">
-                    </div>
-                    <div class="req-field">
-                        <label for="graphics">Graphics:</label>
-                        <input type="text" id="graphics" placeholder="Enter graphics requirement">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="optional-section">
-                <div class="section-title">Optional Sections (leave blank to exclude)</div>
-                
-                <div class="form-group">
-                    <label for="instructions">Instructions:</label>
-                    <textarea id="instructions" placeholder="Enter installation instructions (one per line)"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="installation">Installation:</label>
-                    <textarea id="installation" placeholder="Enter installation steps (one per line)"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="note">Note:</label>
-                    <input type="text" id="note" placeholder="Enter special note (e.g., Launch via Chained Together Launcher.bat)">
-                </div>
-                
-                <div class="form-group">
-                    <label for="dlcs">DLCs:</label>
-                    <textarea id="dlcs" placeholder="Enter DLCs (one per line)"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="extras">Extras:</label>
-                    <textarea id="extras" placeholder="Enter extras (one per line)"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <h3 class="section-title">How to Play Co-Op?</h3>
-                    <label for="onlineFix">Online-Fix Instructions (one per line):</label>
-                    <textarea id="onlineFix" placeholder="Enter Online-Fix instructions (one per line)"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="serverCreation">Server Creation Instructions (one per line):</label>
-                    <textarea id="serverCreation" placeholder="Enter server creation instructions (one per line)"></textarea>
-                </div>
-            </div>
-            
-            <button id="generateBtn" onclick="generateCode()">Generate WordPress Code</button>
+      <div class="input-section">
+        <div class="two-column">
+          <div class="form-group">
+            <label for="gameName">🎮 Game Name:</label>
+            <input type="text" id="gameName" placeholder="Enter game name" />
+          </div>
+
+          <div class="form-group">
+            <label for="developer">👨‍💻 Developer:</label>
+            <input
+              type="text"
+              id="developer"
+              placeholder="Enter developer name"
+            />
+          </div>
         </div>
-        
-        <div class="output-section">
-            <div class="output-box">
-                <h3>WordPress Post Code:</h3>
-                <textarea id="outputCode" readonly></textarea>
-                <button id="copyCodeBtn" onclick="copyToClipboard()">Copy to Clipboard</button>
-            </div>
-            
-            <div class="output-box">
-                <h3>Download Title:</h3>
-                <input type="text" id="downloadTitle" readonly>
-                <button id="copyTitleBtn" onclick="copyTitleToClipboard()">Copy Title</button>
-            </div>
-            
-            <div class="output-box">
-                <h3>Focus Keyphrase:</h3>
-                <input type="text" id="focusKeyphrase" readonly>
-                <button id="copyKeyphraseBtn" onclick="copyKeyphraseToClipboard()">Copy Keyphrase</button>
-            </div>
-            
-            <div class="output-box">
-                <h3>Slug:</h3>
-                <input type="text" id="slug" readonly>
-                <button id="copySlugBtn" onclick="copySlugToClipboard()">Copy Slug</button>
-            </div>
-            
-            <div class="output-box">
-                <h3>Image Renamer:</h3>
-                <input type="text" id="imageRenamer" readonly>
-                <button id="copyImageBtn" onclick="copyImageToClipboard()">Copy Image Name</button>
-            </div>
+
+        <div class="two-column">
+          <div class="form-group">
+            <label for="publisher">📢 Publisher:</label>
+            <input
+              type="text"
+              id="publisher"
+              placeholder="Enter publisher name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="releaseDate">🗓️ Released:</label>
+            <input
+              type="text"
+              id="releaseDate"
+              placeholder="e.g., 1 January 2024"
+            />
+          </div>
         </div>
+
+        <div class="two-column">
+          <div class="form-group">
+            <label for="genre">🏷️ Genre:</label>
+            <input
+              type="text"
+              id="genre"
+              placeholder="e.g., Action, Adventure"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="size">💾 Size:</label>
+            <input type="text" id="size" placeholder="e.g., 1.0GB" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>ℹ️ Version Information:</label>
+          <div class="edition-version">
+            <div>
+              <label for="editionName">Edition Name:</label>
+              <input type="text" id="editionName" placeholder="e.g., Hawk" />
+            </div>
+            <div>
+              <label for="versionNumber">Version Number:</label>
+              <input
+                type="text"
+                id="versionNumber"
+                placeholder="e.g., 2.0.99.88"
+              />
+            </div>
+            <div>
+              <label for="buildNumber">Build Number:</label>
+              <input
+                type="text"
+                id="buildNumber"
+                placeholder="e.g., 372837389"
+              />
+            </div>
+            <div>
+              <label for="dlcCount">DLC Count:</label>
+              <input type="text" id="dlcCount" placeholder="e.g., 32" />
+            </div>
+          </div>
+        </div>
+
+        <div class="two-column">
+          <div class="form-group">
+            <label for="editionType">Edition Type:</label>
+            <input
+              type="text"
+              id="editionType"
+              placeholder="e.g., Repack, Pre-installed, GOG Installer"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="source">Source:</label>
+            <input
+              type="text"
+              id="source"
+              placeholder="Enter source if available"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>🛒 Available On:</label>
+          <div class="three-column">
+            <div>
+              <label for="epicLink">Epic Games URL:</label>
+              <input
+                type="text"
+                id="epicLink"
+                placeholder="https://gamesleech.com/platform/epic-games/"
+              />
+            </div>
+            <div>
+              <label for="gogLink">GOG URL:</label>
+              <input
+                type="text"
+                id="gogLink"
+                placeholder="https://gamesleech.com/platform/gog/"
+              />
+            </div>
+            <div>
+              <label for="steamLink">Steam URL:</label>
+              <input
+                type="text"
+                id="steamLink"
+                placeholder="https://gamesleech.com/platform/steam/"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="ytLink">
+            <svg
+              height="20"
+              width="20"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="#FF0000"
+            >
+              <path
+                d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.407-.501-9.407-.501s-7.537 0-9.407.501A3.007 3.007 0 0 0 .505 6.205a31.25 31.25 0 0 0-.505 5.795 31.25 31.25 0 0 0 .505 5.795A3.007 3.007 0 0 0 2.593 19.88c1.87.501 9.407.501 9.407.501s7.537 0 9.407-.501a3.007 3.007 0 0 0 2.088-2.088 31.25 31.25 0 0 0 .505-5.795 31.25 31.25 0 0 0-.505-5.795zM9.546 15.582V8.418L15.818 12l-6.272 3.582z"
+              ></path>
+            </svg>
+            YouTube Embed Link:
+          </label>
+          <input
+            type="text"
+            id="ytLink"
+            placeholder="Enter YouTube video ID or URL"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="aboutGame">📝 About Game:</label>
+          <textarea
+            id="aboutGame"
+            placeholder="Enter game description"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>💻 System Requirements:</label>
+          <div class="req-fields">
+            <div class="req-field">
+              <label for="os">OS:</label>
+              <input
+                type="text"
+                id="os"
+                placeholder="e.g., Windows 10 64-bit"
+                value="Windows 10 64-bit"
+              />
+            </div>
+            <div class="req-field">
+              <label for="ram">RAM:</label>
+              <input
+                type="text"
+                id="ram"
+                placeholder="e.g., 8 GB"
+                value="8 GB"
+              />
+            </div>
+            <div class="req-field">
+              <label for="storage">Storage:</label>
+              <input
+                type="text"
+                id="storage"
+                placeholder="e.g., 100 GB"
+                value="100 GB"
+              />
+            </div>
+            <div class="req-field">
+              <label for="directx">DirectX:</label>
+              <input
+                type="text"
+                id="directx"
+                placeholder="e.g., Version 11"
+                value="Version 11"
+              />
+            </div>
+            <div class="req-field">
+              <label for="processor">Processor:</label>
+              <input
+                type="text"
+                id="processor"
+                placeholder="Enter processor requirement"
+              />
+            </div>
+            <div class="req-field">
+              <label for="graphics">Graphics:</label>
+              <input
+                type="text"
+                id="graphics"
+                placeholder="Enter graphics requirement"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="optional-section">
+          <div class="section-title">✨ Optional Sections</div>
+
+          <div class="form-group">
+            <label for="instructions">Instructions:</label>
+            <textarea
+              id="instructions"
+              placeholder="Enter installation instructions (one per line)"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="installation">Installation:</label>
+            <textarea
+              id="installation"
+              placeholder="Enter installation steps (one per line)"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="note">Note:</label>
+            <input
+              type="text"
+              id="note"
+              placeholder="e.g., Launch via Chained Together Launcher.bat"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="dlcs">DLCs:</label>
+            <textarea
+              id="dlcs"
+              placeholder="Enter DLCs (one per line)"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="extras">Extras:</label>
+            <textarea
+              id="extras"
+              placeholder="Enter extras (one per line)"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <h3 class="section-title">How to Play Co-Op?</h3>
+            <label for="onlineFix">Online-Fix Instructions:</label>
+            <textarea
+              id="onlineFix"
+              placeholder="Enter Online-Fix instructions (one per line)"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="serverCreation">Server Creation Instructions:</label>
+            <textarea
+              id="serverCreation"
+              placeholder="Enter server creation instructions (one per line)"
+            ></textarea>
+          </div>
+        </div>
+
+        <button id="generateBtn" onclick="generateCode()">
+          Generate WordPress Code
+        </button>
+      </div>
+
+      <div class="output-section">
+        <div class="output-box">
+          <h3>📄 WordPress Post Code:</h3>
+          <textarea id="outputCode" readonly></textarea>
+          <button id="copyCodeBtn" onclick="copyToClipboard('copyCodeBtn')">
+            Copy to Clipboard
+          </button>
+        </div>
+
+        <div class="output-box">
+          <h3>🔽 Download Title:</h3>
+          <input type="text" id="downloadTitle" readonly />
+          <button
+            id="copyTitleBtn"
+            onclick="copyToClipboard('copyTitleBtn', 'downloadTitle')"
+          >
+            Copy Title
+          </button>
+        </div>
+
+        <div class="output-box">
+          <h3>🔑 Focus Keyphrase:</h3>
+          <input type="text" id="focusKeyphrase" readonly />
+          <button
+            id="copyKeyphraseBtn"
+            onclick="copyToClipboard('copyKeyphraseBtn', 'focusKeyphrase')"
+          >
+            Copy Keyphrase
+          </button>
+        </div>
+
+        <div class="output-box">
+          <h3>🔗 Slug:</h3>
+          <input type="text" id="slug" readonly />
+          <button
+            id="copySlugBtn"
+            onclick="copyToClipboard('copySlugBtn', 'slug')"
+          >
+            Copy Slug
+          </button>
+        </div>
+
+        <div class="output-box">
+          <h3>🖼️ Image Renamer:</h3>
+          <input type="text" id="imageRenamer" readonly />
+          <button
+            id="copyImageBtn"
+            onclick="copyToClipboard('copyImageBtn', 'imageRenamer')"
+          >
+            Copy Image Name
+          </button>
+        </div>
+      </div>
     </div>
 
     <script>
-        function formatReleaseDate(dateString) {
-            const monthMap = {
-                'jan': 'January', 'jan,': 'January',
-                'feb': 'February', 'feb,': 'February',
-                'mar': 'March', 'mar,': 'March',
-                'apr': 'April', 'apr,': 'April',
-                'may': 'May', 'may,': 'May',
-                'jun': 'June', 'jun,': 'June',
-                'jul': 'July', 'jul,': 'July',
-                'aug': 'August', 'aug,': 'August',
-                'sep': 'September', 'sep,': 'September',
-                'oct': 'October', 'oct,': 'October',
-                'nov': 'November', 'nov,': 'November',
-                'dec': 'December', 'dec,': 'December'
-            };
+      function formatReleaseDate(dateString) {
+        const monthMap = {
+          jan: "January",
+          "jan,": "January",
+          feb: "February",
+          "feb,": "February",
+          mar: "March",
+          "mar,": "March",
+          apr: "April",
+          "apr,": "April",
+          may: "May",
+          "may,": "May",
+          jun: "June",
+          "jun,": "June",
+          jul: "July",
+          "jul,": "July",
+          aug: "August",
+          "aug,": "August",
+          sep: "September",
+          "sep,": "September",
+          oct: "October",
+          "oct,": "October",
+          nov: "November",
+          "nov,": "November",
+          dec: "December",
+          "dec,": "December",
+        };
 
-            const datePattern = /(\d{1,2})\s*([a-z]{3},)\s*(\d{4})|([a-z]{3},)\s*(\d{1,2})\s*,?\s*(\d{4})/i;
-            const match = dateString.match(datePattern);
+        const datePattern =
+          /(\d{1,2})\s*([a-z]{3},)\s*(\d{4})|([a-z]{3},)\s*(\d{1,2})\s*,?\s*(\d{4})/i;
+        const match = dateString.match(datePattern);
 
-            if (match) {
-                let day, month, year;
-                if (match[1]) {
-                    day = match[1];
-                    month = match[2].toLowerCase();
-                    year = match[3];
-                } else {
-                    day = match[5];
-                    month = match[4].toLowerCase();
-                    year = match[6];
-                }
+        if (match) {
+          let day, month, year;
+          if (match[1]) {
+            day = match[1];
+            month = match[2].toLowerCase();
+            year = match[3];
+          } else {
+            day = match[5];
+            month = match[4].toLowerCase();
+            year = match[6];
+          }
 
-                const fullMonth = monthMap[month] || month.replace(',', '');
-                return `${day} ${fullMonth} ${year}`;
-            }
-
-            return dateString || '1 January 20';
+          const fullMonth = monthMap[month] || month.replace(",", "");
+          return `${day} ${fullMonth} ${year}`;
         }
 
-        function generateCode() {
-            const gameName = document.getElementById('gameName').value || 'XXX';
-            const developer = document.getElementById('developer').value || '';
-            const publisher = document.getElementById('publisher').value || '';
-            const releaseDateInput = document.getElementById('releaseDate').value;
-            const releaseDate = formatReleaseDate(releaseDateInput);
-            let genre = document.getElementById('genre').value || 'Action, Adventure';
-            const size = document.getElementById('size').value || '1.0GB';
-            const editionName = document.getElementById('editionName').value;
-            const versionNumber = document.getElementById('versionNumber').value;
-            const buildNumber = document.getElementById('buildNumber').value;
-            const dlcCount = document.getElementById('dlcCount').value;
-            const editionType = document.getElementById('editionType').value || 'Repack, Pre-installed, GOG Installer';
-            const source = document.getElementById('source').value;
-            const epicLink = document.getElementById('epicLink').value;
-            const gogLink = document.getElementById('gogLink').value;
-            const steamLink = document.getElementById('steamLink').value;
-            const ytLink = document.getElementById('ytLink').value;
-            const aboutGame = document.getElementById('aboutGame').value;
-            const note = document.getElementById('note').value;
-            const onlineFix = document.getElementById('onlineFix').value;
-            const serverCreation = document.getElementById('serverCreation').value;
-            
-            const os = document.getElementById('os').value;
-            const ram = document.getElementById('ram').value;
-            const storage = document.getElementById('storage').value;
-            const directx = document.getElementById('directx').value;
-            const processor = document.getElementById('processor').value;
-            const graphics = document.getElementById('graphics').value;
-            
-            const instructions = document.getElementById('instructions').value;
-            const installation = document.getElementById('installation').value;
-            const dlcs = document.getElementById('dlcs').value;
-            const extras = document.getElementById('extras').value;
-            
-            let versionInfoParts = [];
-            
-            if (versionNumber) versionInfoParts.push(`v${versionNumber}`);
-            if (buildNumber) versionInfoParts.push(`build ${buildNumber}`);
-            if (dlcCount) versionInfoParts.push(`+ ${dlcCount}DLCs`);
-            
-            let versionInfo = '';
-            if (versionInfoParts.length > 0) {
-                if (versionInfoParts.length === 1) {
-                    versionInfo = `(${versionInfoParts[0]})`;
-                } else if (versionInfoParts.length === 2) {
-                    if (versionNumber && buildNumber) {
-                        versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]})`;
-                    } else {
-                        versionInfo = `(${versionInfoParts[0]} ${versionInfoParts[1]})`;
-                    }
-                } else if (versionInfoParts.length === 3) {
-                    versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]} ${versionInfoParts[2]})`;
-                }
-            }
-            
-            let downloadTitleVersionParts = [];
-            
-            if (versionNumber) downloadTitleVersionParts.push(`v${versionNumber}`);
-            if (buildNumber) downloadTitleVersionParts.push(`build${buildNumber}`);
-            if (dlcCount) downloadTitleVersionParts.push(`+ ${dlcCount}DLCs`);
-            
-            let downloadTitleVersionInfo = '';
-            if (downloadTitleVersionParts.length > 0) {
-                if (downloadTitleVersionParts.length === 1) {
-                    downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]})`;
-                } else if (downloadTitleVersionParts.length === 2) {
-                    if (versionNumber && buildNumber) {
-                        downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${downloadTitleVersionParts[1]})`;
-                    } else {
-                        downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} ${downloadTitleVersionParts[1]})`;
-                    }
-                } else if (downloadTitleVersionParts.length === 3) {
-                    downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${downloadTitleVersionParts[1]} ${downloadTitleVersionParts[2]})`;
-                }
-            }
-            
-            let downloadTitle = `Download ${gameName}`;
-            if (editionName) downloadTitle += ` - ${editionName} Edition`;
-            if (downloadTitleVersionInfo) downloadTitle += ` ${downloadTitleVersionInfo}`;
-            
-            document.getElementById('downloadTitle').value = downloadTitle;
-            
-            const focusKeyphrase = `Download ${gameName}`;
-            document.getElementById('focusKeyphrase').value = focusKeyphrase;
-            
-            let slug = gameName.toLowerCase()
-                .replace(/[^\w\s]/gi, '')
-                .replace(/\s+/g, '-')
-                .replace(/-+/g, '-');
-            document.getElementById('slug').value = slug;
-            
-            const imageRenamer = `download-${slug}.webp`;
-            document.getElementById('imageRenamer').value = imageRenamer;
-            
-            let devPubText = '';
-            if (developer && publisher) {
-                if (developer === publisher) {
-                    devPubText = `developed and published by ${developer}`;
-                } else {
-                    devPubText = `developed by ${developer} and published by ${publisher}`;
-                }
-            } else if (developer) {
-                devPubText = `developed by ${developer}`;
-            } else if (publisher) {
-                devPubText = `published by ${publisher}`;
-            }
-            
-            let formattedGenre = genre;
-            let genreLinks = [];
-            if (genre.includes(',')) {
-                const genres = genre.split(',').map(g => g.trim()).filter(g => g !== '');
-                if (genres.length > 0) {
-                    genres.sort();
-                    genreLinks = genres.map(g => `<a href="https://gamesleech.com/genre/${g.toLowerCase().replace(/\s+/g, '-')}/">${g}</a>`);
-                    
-                    if (genres.length > 1) {
-                        if (genres.length > 2) {
-                            formattedGenre = genres.slice(0, -1).join(', ') + ', and ' + genres[genres.length - 1];
-                        } else {
-                            formattedGenre = genres.join(' and ');
-                        }
-                    }
-                }
+        return dateString || "1 January 2024";
+      }
+
+      function generateCode() {
+        const gameName = document.getElementById("gameName").value || "XXX";
+        const developer = document.getElementById("developer").value || "";
+        const publisher = document.getElementById("publisher").value || "";
+        const releaseDateInput = document.getElementById("releaseDate").value;
+        const releaseDate = formatReleaseDate(releaseDateInput);
+        let genre =
+          document.getElementById("genre").value || "Action, Adventure";
+        const size = document.getElementById("size").value || "1.0GB";
+        const editionName = document.getElementById("editionName").value;
+        const versionNumber = document.getElementById("versionNumber").value;
+        const buildNumber = document.getElementById("buildNumber").value;
+        const dlcCount = document.getElementById("dlcCount").value;
+        const editionType =
+          document.getElementById("editionType").value ||
+          "Repack, Pre-installed, GOG Installer";
+        const source = document.getElementById("source").value;
+        const epicLink = document.getElementById("epicLink").value;
+        const gogLink = document.getElementById("gogLink").value;
+        const steamLink = document.getElementById("steamLink").value;
+        const ytLink = document.getElementById("ytLink").value;
+        const aboutGame = document.getElementById("aboutGame").value;
+        const note = document.getElementById("note").value;
+        const onlineFix = document.getElementById("onlineFix").value;
+        const serverCreation = document.getElementById("serverCreation").value;
+
+        const os = document.getElementById("os").value;
+        const ram = document.getElementById("ram").value;
+        const storage = document.getElementById("storage").value;
+        const directx = document.getElementById("directx").value;
+        const processor = document.getElementById("processor").value;
+        const graphics = document.getElementById("graphics").value;
+
+        const instructions = document.getElementById("instructions").value;
+        const installation = document.getElementById("installation").value;
+        const dlcs = document.getElementById("dlcs").value;
+        const extras = document.getElementById("extras").value;
+
+        let versionInfoParts = [];
+
+        if (versionNumber) versionInfoParts.push(`v${versionNumber}`);
+        if (buildNumber) versionInfoParts.push(`build ${buildNumber}`);
+        if (dlcCount) versionInfoParts.push(`+ ${dlcCount}DLCs`);
+
+        let versionInfo = "";
+        if (versionInfoParts.length > 0) {
+          if (versionInfoParts.length === 1) {
+            versionInfo = `(${versionInfoParts[0]})`;
+          } else if (versionInfoParts.length === 2) {
+            if (versionNumber && buildNumber) {
+              versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]})`;
             } else {
-                genreLinks = [`<a href="https://gamesleech.com/genre/${genre.toLowerCase().replace(/\s+/g, '-')}/">${genre}</a>`];
+              versionInfo = `(${versionInfoParts[0]} ${versionInfoParts[1]})`;
             }
-            
-            let ytEmbed = '';
-            if (ytLink) {
-                let videoId = ytLink;
-                if (ytLink.includes('youtube.com')) {
-                    const urlParams = new URLSearchParams(new URL(ytLink).search);
-                    videoId = urlParams.get('v');
-                } else if (ytLink.includes('youtu.be')) {
-                    videoId = ytLink.split('/').pop().split('?')[0];
-                }
-                
-                if (videoId) {
-                    ytEmbed = `<!-- wp:embed {"url":"https://www.youtube.com/watch?v=${videoId}","providerNameSlug":"youtube","responsive":true,"align":"center"} -->
-<figure class="wp-block-embed aligncenter is-provider-youtube wp-block-embed-youtube"><div class="wp-block-embed__wrapper">
+          } else if (versionInfoParts.length === 3) {
+            versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]} ${versionInfoParts[2]})`;
+          }
+        }
+
+        let downloadTitleVersionParts = [];
+
+        if (versionNumber) downloadTitleVersionParts.push(`v${versionNumber}`);
+        if (buildNumber) downloadTitleVersionParts.push(`build${buildNumber}`);
+        if (dlcCount) downloadTitleVersionParts.push(`+ ${dlcCount}DLCs`);
+
+        let downloadTitleVersionInfo = "";
+        if (downloadTitleVersionParts.length > 0) {
+          if (downloadTitleVersionParts.length === 1) {
+            downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]})`;
+          } else if (downloadTitleVersionParts.length === 2) {
+            if (versionNumber && buildNumber) {
+              downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${downloadTitleVersionParts[1]})`;
+            } else {
+              downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} ${downloadTitleVersionParts[1]})`;
+            }
+          } else if (versionInfoParts.length === 3) {
+            downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${versionInfoParts[1]} ${downloadTitleVersionParts[2]})`;
+          }
+        }
+
+        let downloadTitle = `Download ${gameName}`;
+        if (editionName) downloadTitle += ` - ${editionName} Edition`;
+        if (downloadTitleVersionInfo)
+          downloadTitle += ` ${downloadTitleVersionInfo}`;
+
+        document.getElementById("downloadTitle").value = downloadTitle;
+
+        const focusKeyphrase = `Download ${gameName}`;
+        document.getElementById("focusKeyphrase").value = focusKeyphrase;
+
+        let slug = gameName
+          .toLowerCase()
+          .replace(/[^\w\s]/gi, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-");
+        document.getElementById("slug").value = slug;
+
+        const imageRenamer = `download-${slug}.webp`;
+        document.getElementById("imageRenamer").value = imageRenamer;
+
+        let devPubText = "";
+        if (developer && publisher) {
+          if (developer === publisher) {
+            devPubText = `developed and published by ${developer}`;
+          } else {
+            devPubText = `developed by ${developer} and published by ${publisher}`;
+          }
+        } else if (developer) {
+          devPubText = `developed by ${developer}`;
+        } else if (publisher) {
+          devPubText = `published by ${publisher}`;
+        }
+
+        let formattedGenre = genre;
+        let genreLinks = [];
+        if (genre.includes(",")) {
+          const genres = genre
+            .split(",")
+            .map((g) => g.trim())
+            .filter((g) => g !== "");
+          if (genres.length > 0) {
+            genres.sort();
+            genreLinks = genres.map(
+              (g) =>
+                `<a href="https://gamesleech.com/genre/${g
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")}/">${g}</a>`
+            );
+
+            if (genres.length > 1) {
+              if (genres.length > 2) {
+                formattedGenre =
+                  genres.slice(0, -1).join(", ") +
+                  ", and " +
+                  genres[genres.length - 1];
+              } else {
+                formattedGenre = genres.join(" and ");
+              }
+            }
+          }
+        } else {
+          genreLinks = [
+            `<a href="https://gamesleech.com/genre/${genre
+              .toLowerCase()
+              .replace(/\s+/g, "-")}/">${genre}</a>`,
+          ];
+        }
+
+        let ytEmbed = "";
+        if (ytLink) {
+          let videoId = ytLink.split("v=").pop().split("&")[0].split("/").pop();
+          if (videoId) {
+            ytEmbed = `<figure class="wp-block-embed aligncenter is-provider-youtube wp-block-embed-youtube"><div class="wp-block-embed__wrapper">
 https://www.youtube.com/watch?v=${videoId}
 </div></figure>
-<!-- /wp:embed -->`;
-                }
-            }
-            
-            let systemReqList = `<!-- wp:list -->
-<ul class="wp-block-list"><!-- wp:list-item -->
-<li><strong>OS</strong>: ${os}</li>
-<!-- /wp:list-item -->
+`;
+          }
+        } else {
+          ytEmbed = ``;
+        }
 
-<!-- wp:list-item -->
+        let systemReqList = `<ul class="wp-block-list"><li><strong>OS</strong>: ${os}</li>
 <li><strong>RAM</strong>: ${ram}</li>
-<!-- /wp:list-item -->
-
-<!-- wp:list-item -->
 <li><strong>Storage</strong>: ${storage}</li>
-<!-- /wp:list-item -->
-
-<!-- wp:list-item -->
 <li><strong>DirectX</strong>: ${directx}</li>
-<!-- /wp:list-item -->
-
-<!-- wp:list-item -->
 <li><strong>Processor</strong>: ${processor}</li>
-<!-- /wp:list-item -->
-
-<!-- wp:list-item -->
 <li><strong>Graphics</strong>: ${graphics}</li>
-<!-- /wp:list-item --></ul>
-<!-- /wp:list -->`;
-            
-            let instructionsSection = '';
-            if (instructions) {
-                const lines = instructions.split('\n').filter(line => line.trim() !== '');
-                if (lines.length > 0) {
-                    instructionsSection = `<!-- wp:heading -->
-<h2 class="wp-block-heading">Instructions</h2>
-<!-- /wp:heading -->
-
-<!-- wp:list -->
-<ul class="wp-block-list"><!-- wp:list-item -->
-<li></li>
-<!-- /wp:list-item --></ul>
-<!-- /wp:list -->`;
-                }
-            }
-            
-            let installationSection = '';
-            if (installation) {
-                const lines = installation.split('\n').filter(line => line.trim() !== '');
-                if (lines.length > 0) {
-                    installationSection = `<!-- wp:heading -->
-<h2 class="wp-block-heading">Installation</h2>
-<!-- /wp:heading -->
-
-<!-- wp:list -->
-<ul class="wp-block-list"><!-- wp:list-item -->
-<li></li>
-<!-- /wp:list-item --></ul>
-<!-- /wp:list -->
-
+</ul>
 `;
-                }
-            }
-            
-            let noteSection = '';
-            if (note) {
-                noteSection = `<!-- wp:paragraph -->
-<p><strong><mark style="background-color:rgba(0, 0, 0, 0);color:#e40505" class="has-inline-color">Note</mark></strong>: ${note}</p>
-<!-- /wp:paragraph -->
 
-`;
-            }
-            
-            let dlcsSection = '';
-            if (dlcs) {
-                const lines = dlcs.split('\n').filter(line => line.trim() !== '');
-                if (lines.length > 0) {
-                    dlcsSection = `<!-- wp:heading -->
-<h2 class="wp-block-heading">DLCs</h2>
-<!-- /wp:heading -->
+        const createList = (lines) =>
+          lines
+            .split("\n")
+            .filter((line) => line.trim() !== "")
+            .map((line) => `\n<li>${line}</li>\n`)
+            .join("\n\n");
 
-<!-- wp:list -->
-<ul class="wp-block-list"><!-- wp:list-item -->
-<li></li>
-<!-- /wp:list-item --></ul>
-<!-- /wp:list -->`;
-                }
-            }
-            
-            let extrasSection = '';
-            if (extras) {
-                const lines = extras.split('\n').filter(line => line.trim() !== '');
-                if (lines.length > 0) {
-                    extrasSection = `<!-- wp:heading -->
-<h2 class="wp-block-heading">Extras</h2>
-<!-- /wp:heading -->
+        let instructionsSection = instructions
+          ? `\n<h2 class="wp-block-heading">Instructions</h2>\n\n\n\n<ul class="wp-block-list">${createList(
+              instructions
+            )}</ul>\n\n\n`
+          : "";
+        let installationSection = installation
+          ? `\n<h2 class="wp-block-heading">Installation</h2>\n\n\n\n<ul class="wp-block-list">${createList(
+              installation
+            )}</ul>\n\n\n`
+          : "";
+        let noteSection = note
+          ? `\n<p><strong><mark style="background-color:rgba(0, 0, 0, 0);color:#e40505" class="has-inline-color">Note</mark></strong>: ${note}</p>\n\n\n`
+          : "";
+        let dlcsSection = dlcs
+          ? `\n<h2 class="wp-block-heading">DLCs</h2>\n\n\n\n<ul class="wp-block-list">${createList(
+              dlcs
+            )}</ul>\n\n\n`
+          : "";
+        let extrasSection = extras
+          ? `\n<h2 class="wp-block-heading">Extras</h2>\n\n\n\n<ul class="wp-block-list">${createList(
+              extras
+            )}</ul>\n\n\n`
+          : "";
 
-<!-- wp:list -->
-<ul class="wp-block-list"><!-- wp:list-item -->
-<li></li>
-<!-- /wp:list-item --></ul>
-<!-- /wp:list -->`;
-                }
-            }
-            
-            let coopSection = '';
-            const onlineFixLines = onlineFix ? onlineFix.split('\n').filter(line => line.trim() !== '') : [];
-            const serverCreationLines = serverCreation ? serverCreation.split('\n').filter(line => line.trim() !== '') : [];
-            
-            if (onlineFixLines.length > 0 || serverCreationLines.length > 0) {
-                coopSection = `<!-- wp:heading -->
-<h2 class="wp-block-heading">How to Play Co-Op?</h2>
-<!-- /wp:heading -->
+        let coopSection = "";
+        if (onlineFix || serverCreation) {
+          let coopListItems = "";
+          if (onlineFix) coopListItems += createList(onlineFix);
+          if (serverCreation) {
+            coopListItems +=
+              (coopListItems ? "\n\n" : "") +
+              `\n<li><strong>Server creation</strong>:</li>\n\n\n` +
+              createList(serverCreation);
+          }
+          coopSection = `\n<h2 class="wp-block-heading">How to Play Co-Op?</h2>\n\n\n\n<ul class="wp-block-list">${coopListItems}</ul>\n\n\n`;
+        }
 
-<!-- wp:list -->
-<ul class="wp-block-list">`;
-                
-                if (onlineFixLines.length > 0) {
-                    for (let i = 0; i < onlineFixLines.length - 1; i++) {
-                        coopSection += `<!-- wp:list-item -->
-<li>${onlineFixLines[i]}</li>
-<!-- /wp:list-item -->
-
-`;
-                    }
-                    
-                    if (serverCreationLines.length > 0) {
-                        coopSection += `<!-- wp:list-item -->
-<li>${onlineFixLines[onlineFixLines.length - 1]}<br><strong>Server creation</strong>:</li>
-<!-- /wp:list-item -->
-
-`;
-                        
-                        serverCreationLines.forEach(line => {
-                            coopSection += `<!-- wp:list-item -->
-<li>${line}</li>
-<!-- /wp:list-item -->
-
-`;
-                        });
-                    } else {
-                        coopSection += `<!-- wp:list-item -->
-<li>${onlineFixLines[onlineFixLines.length - 1]}</li>
-<!-- /wp:list-item -->
-
-`;
-                    }
-                } else if (serverCreationLines.length > 0) {
-                    coopSection += `<!-- wp:list-item -->
-<li><strong>Server creation</strong>:</li>
-<!-- /wp:list-item -->
-
-`;
-                    
-                    serverCreationLines.forEach(line => {
-                        coopSection += `<!-- wp:list-item -->
-<li>${line}</li>
-<!-- /wp:list-item -->
-
-`;
-                    });
-                }
-                
-                coopSection += `</ul>
-<!-- /wp:list -->`;
-            }
-            
-            let platformLinks = [];
-            if (epicLink) platformLinks.push(`<a href="${epicLink}" target="_blank" rel="noreferrer noopener nofollow">Epic Games</a>`);
-            if (gogLink) platformLinks.push(`<a href="${gogLink}" target="_blank" rel="noreferrer noopener nofollow">GOG</a>`);
-            if (steamLink) platformLinks.push(`<a href="${steamLink}" target="_blank" rel="noreferrer noopener nofollow">Steam</a>`);
-            
-            let editionText = editionName ? `${editionName} Edition ` : '';
-            let code = `<!-- wp:paragraph -->
-<p>Download <strong>${gameName}</strong> PC Game. Here is a direct link to download ${gameName} ${editionText}latest version ${versionInfo} for free. ${gameName} is ${devPubText}. It was released on ${releaseDate} for Windows PC and is considered one of the best in the ${formattedGenre} genre.</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:heading -->
+        let editionText = editionName ? `${editionName} Edition ` : "";
+        let code = `<p>Download <strong>${gameName}</strong> PC Game. Here is a direct link to download ${gameName} ${editionText}latest version ${versionInfo} for free. ${gameName} is ${devPubText}. It was released on ${releaseDate} for Windows PC and is considered one of the best in the ${formattedGenre} genre.</p>
 <h2 class="wp-block-heading">Game Info</h2>
-<!-- /wp:heading -->
-
-<!-- wp:list -->
-<ul class="wp-block-list"><!-- wp:list-item -->
-<li><strong>Game Name</strong>: ${gameName} </li>
-<!-- /wp:list-item -->
-
-<!-- wp:list-item -->
+<ul class="wp-block-list"><li><strong>Game Name</strong>: ${gameName} </li>
 <li><strong>Released</strong>: ${releaseDate}</li>
-<!-- /wp:list-item -->
-
-<!-- wp:list-item -->
-<li><strong>Genre</strong>: ${genreLinks.join(', ')}</li>
-<!-- /wp:list-item -->`;
-
-            if (publisher) {
-                code += `
-
-<!-- wp:list-item -->
-<li><strong>Publisher</strong>: ${publisher}</li>
-<!-- /wp:list-item -->`;
-            }
-
-            code += `
-
-<!-- wp:list-item -->
-<li><strong>Size</strong>: ${size}</li>
-<!-- /wp:list-item -->
-
-<!-- wp:list-item -->
-<li><strong>Edition Type</strong>: ${editionType}</li>
-<!-- /wp:list-item -->`;
-
-            if (source) {
-                code += `
-
-<!-- wp:list-item -->
-<li><strong>Source</strong>: ${source}</li>
-<!-- /wp:list-item -->`;
-            }
-
-            if (platformLinks.length > 0) {
-                code += `
-                
-<!-- wp:list-item -->
-<li><strong>Available on</strong>: ${platformLinks.join(', ')}</li>
-<!-- /wp:list-item -->`;
-            }
-
-            code += `</ul>
-<!-- /wp:list -->
-
+<li><strong>Genre</strong>: ${genreLinks.join(", ")}</li>
 `;
 
-            if (ytEmbed) {
-                code += `${ytEmbed}
-
-`;
-            }
-
-            code += `<!-- wp:heading {"textAlign":"center","className":"dl_head"} -->
-<h2 class="wp-block-heading has-text-align-center dl_head">${downloadTitle} for Free</h2>
-<!-- /wp:heading -->
-
-<!-- wp:group {"className":"dl_grp","layout":{"type":"constrained"}} -->
-<div class="wp-block-group dl_grp"><!-- wp:shortcode -->
-[su_accordion]
+        if (publisher)
+          code += `\n\n\n<li><strong>Publisher</strong>: ${publisher}</li>\n`;
+        code += `\n\n\n<li><strong>Size</strong>: ${size}</li>\n\n\n\n<li><strong>Edition Type</strong>: ${editionType}</li>\n`;
+        if (source)
+          code += `\n\n\n<li><strong>Source</strong>: ${source}</li>\n`;
+        if (platformLinks.length > 0)
+          code += `\n                \n\n<li><strong>Available on</strong>: ${platformLinks.join(
+            ", "
+          )}</li>\n`;
+        code += `</ul>\n\n\n`;
+        if (ytEmbed) code += `${ytEmbed}\n\n`;
+        code += `<h2 class="wp-block-heading has-text-align-center dl_head">${downloadTitle} for Free</h2>
+<div class="wp-block-group dl_grp">[su_accordion]
 [su_spoiler class="file-spoiler" title="Download as File" icon="arrow" style="fancy"]
-<!-- /wp:shortcode -->
-
-<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
-<div class="wp-block-buttons"><!-- wp:button {"className":"download_file"} -->
-<div class="wp-block-button download_file"><a class="wp-block-button__link wp-element-button" href="#" target="_blank" rel="noreferrer noopener nofollow">Download Zip (1GB)</a></div>
-<!-- /wp:button --></div>
-<!-- /wp:buttons -->
-
-<!-- wp:shortcode -->
+<div class="wp-block-buttons"><div class="wp-block-button download_file"><a class="wp-block-button__link wp-element-button" href="#" target="_blank" rel="noreferrer noopener nofollow">Download Zip (1GB)</a></div>
+</div>
 [/su_spoiler]
 [su_spoiler class="parts-spoiler" title="Download as Parts" icon="folder-1" style="fancy"]
-<!-- /wp:shortcode -->
-
-<!-- wp:paragraph -->
 <p></p>
-<!-- /wp:paragraph -->
-
-<!-- wp:shortcode -->
 [/su_spoiler]
 [/su_accordion]
-<!-- /wp:shortcode --></div>
-<!-- /wp:group -->
-
-<!-- wp:paragraph {"className":"also_read"} -->
-<p class="also_read"><a href="https://gamesleech.com/download-installation-guide/">How to Download &amp; Install Games from GamesLeech?</a> </p>
-<!-- /wp:paragraph -->
-
+</div>
+<p class="also_read"><a href="https://gamesleech.com/download-installation-guide/">How to Download & Install Games from GamesLeech?</a> </p>
 `;
-
-            if (installationSection) {
-                code += `${installationSection}`;
-            }
-
-            if (noteSection) {
-                code += `${noteSection}`;
-            }
-
-            if (coopSection) {
-                code += `${coopSection}
-
+        if (installationSection) code += installationSection;
+        if (noteSection) code += noteSection;
+        if (coopSection) code += coopSection;
+        code += `[su_spoiler class="description-spoiler" title="Description" icon="plus" style="fancy"]
 `;
-            }
-
-            code += `<!-- wp:shortcode -->
-[su_spoiler class="description-spoiler" title="Description" icon="plus" style="fancy"]
-<!-- /wp:shortcode -->
-
-`;
-
-            if (instructionsSection) {
-                code += `${instructionsSection}
-
-`;
-            }
-
-            if (dlcsSection) {
-                code += `${dlcsSection}
-
-`;
-            }
-
-            if (extrasSection) {
-                code += `${extrasSection}
-
-`;
-            }
-
-            code += `<!-- wp:heading -->
-<h2 class="wp-block-heading">About Game</h2>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph -->
-<p>${aboutGame || ''}</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:heading -->
+        if (instructionsSection) code += instructionsSection;
+        if (dlcsSection) code += dlcsSection;
+        if (extrasSection) code += extrasSection;
+        code += `<h2 class="wp-block-heading">About Game</h2>
+<p>${aboutGame || ""}</p>
 <h2 class="wp-block-heading">System Requirements</h2>
-<!-- /wp:heading -->
-
 ${systemReqList}
 
-<!-- wp:shortcode -->
 [/su_spoiler]
-<!-- /wp:shortcode -->
-
-<!-- wp:paragraph -->
 <p></p>
-<!-- /wp:paragraph -->`;
+`;
 
-            document.getElementById('outputCode').value = code;
-        }
-        
-        function copyToClipboard() {
-            const outputCode = document.getElementById('outputCode');
-            outputCode.select();
-            document.execCommand('copy');
-            
-            const copyBtn = document.getElementById('copyCodeBtn');
-            copyBtn.textContent = 'Copied!';
-            copyBtn.classList.add('copied');
-            
+        document.getElementById("outputCode").value = code;
+      }
+
+      function copyToClipboard(buttonId, elementId = "outputCode") {
+        const element = document.getElementById(elementId);
+        element.select();
+        element.setSelectionRange(0, 99999);
+
+        navigator.clipboard
+          .writeText(element.value)
+          .then(() => {
+            const copyBtn = document.getElementById(buttonId);
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = "Copied!";
+            copyBtn.classList.add("copied");
+
             setTimeout(() => {
-                copyBtn.textContent = 'Copy to Clipboard';
-                copyBtn.classList.remove('copied');
+              copyBtn.textContent = originalText;
+              copyBtn.classList.remove("copied");
             }, 2000);
-        }
-        
-        function copyTitleToClipboard() {
-            const downloadTitle = document.getElementById('downloadTitle');
-            downloadTitle.select();
-            document.execCommand('copy');
-            
-            const copyBtn = document.getElementById('copyTitleBtn');
-            copyBtn.textContent = 'Copied!';
-            copyBtn.classList.add('copied');
-            
-            setTimeout(() => {
-                copyBtn.textContent = 'Copy Title';
-                copyBtn.classList.remove('copied');
-            }, 2000);
-        }
-        
-        function copyKeyphraseToClipboard() {
-            const focusKeyphrase = document.getElementById('focusKeyphrase');
-            focusKeyphrase.select();
-            document.execCommand('copy');
-            
-            const copyBtn = document.getElementById('copyKeyphraseBtn');
-            copyBtn.textContent = 'Copied!';
-            copyBtn.classList.add('copied');
-            
-            setTimeout(() => {
-                copyBtn.textContent = 'Copy Keyphrase';
-                copyBtn.classList.remove('copied');
-            }, 2000);
-        }
-        
-        function copySlugToClipboard() {
-            const slug = document.getElementById('slug');
-            slug.select();
-            document.execCommand('copy');
-            
-            const copyBtn = document.getElementById('copySlugBtn');
-            copyBtn.textContent = 'Copied!';
-            copyBtn.classList.add('copied');
-            
-            setTimeout(() => {
-                copyBtn.textContent = 'Copy Slug';
-                copyBtn.classList.remove('copied');
-            }, 2000);
-        }
-        
-        function copyImageToClipboard() {
-            const imageRenamer = document.getElementById('imageRenamer');
-            imageRenamer.select();
-            document.execCommand('copy');
-            
-            const copyBtn = document.getElementById('copyImageBtn');
-            copyBtn.textContent = 'Copied!';
-            copyBtn.classList.add('copied');
-            
-            setTimeout(() => {
-                copyBtn.textContent = 'Copy Image Name';
-                copyBtn.classList.remove('copied');
-            }, 2000);
-        }
+          })
+          .catch((err) => {
+            console.error("Failed to copy: ", err);
+          });
+      }
     </script>
-</body>
+  </body>
 </html>
