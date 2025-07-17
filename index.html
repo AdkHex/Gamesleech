@@ -1,17 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WordPress Game Post Generator</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
     <style>
-      :root {
+        :root {
         --bg-color: #1a202c;
         --card-bg: #2d3748;
         --input-bg: #262f40;
@@ -297,8 +291,8 @@
         }
       }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="header">
       <h1>🎮 Game Post Generator 🎮</h1>
       <p> © blackHAWK</p>
@@ -597,7 +591,7 @@
         <div class="output-box">
           <h3>📄 WordPress Post Code:</h3>
           <textarea id="outputCode" readonly></textarea>
-          <button id="copyCodeBtn" onclick="copyToClipboard('copyCodeBtn')">
+          <button id="copyCodeBtn" onclick="copyToClipboard('outputCode', 'copyCodeBtn')">
             Copy to Clipboard
           </button>
         </div>
@@ -607,7 +601,7 @@
           <input type="text" id="downloadTitle" readonly />
           <button
             id="copyTitleBtn"
-            onclick="copyToClipboard('copyTitleBtn', 'downloadTitle')"
+            onclick="copyToClipboard('downloadTitle', 'copyTitleBtn')"
           >
             Copy Title
           </button>
@@ -618,7 +612,7 @@
           <input type="text" id="focusKeyphrase" readonly />
           <button
             id="copyKeyphraseBtn"
-            onclick="copyToClipboard('copyKeyphraseBtn', 'focusKeyphrase')"
+            onclick="copyToClipboard('focusKeyphrase', 'copyKeyphraseBtn')"
           >
             Copy Keyphrase
           </button>
@@ -629,7 +623,7 @@
           <input type="text" id="slug" readonly />
           <button
             id="copySlugBtn"
-            onclick="copyToClipboard('copySlugBtn', 'slug')"
+            onclick="copyToClipboard('slug', 'copySlugBtn')"
           >
             Copy Slug
           </button>
@@ -640,7 +634,7 @@
           <input type="text" id="imageRenamer" readonly />
           <button
             id="copyImageBtn"
-            onclick="copyToClipboard('copyImageBtn', 'imageRenamer')"
+            onclick="copyToClipboard('imageRenamer', 'copyImageBtn')"
           >
             Copy Image Name
           </button>
@@ -649,345 +643,607 @@
     </div>
 
     <script>
-      function formatReleaseDate(dateString) {
-        const monthMap = {
-          jan: "January",
-          "jan,": "January",
-          feb: "February",
-          "feb,": "February",
-          mar: "March",
-          "mar,": "March",
-          apr: "April",
-          "apr,": "April",
-          may: "May",
-          "may,": "May",
-          jun: "June",
-          "jun,": "June",
-          jul: "July",
-          "jul,": "July",
-          aug: "August",
-          "aug,": "August",
-          sep: "September",
-          "sep,": "September",
-          oct: "October",
-          "oct,": "October",
-          nov: "November",
-          "nov,": "November",
-          dec: "December",
-          "dec,": "December",
-        };
+        function formatReleaseDate(dateString) {
+            const monthMap = {
+                'jan': 'January', 'jan,': 'January',
+                'feb': 'February', 'feb,': 'February',
+                'mar': 'March', 'mar,': 'March',
+                'apr': 'April', 'apr,': 'April',
+                'may': 'May', 'may,': 'May',
+                'jun': 'June', 'jun,': 'June',
+                'jul': 'July', 'jul,': 'July',
+                'aug': 'August', 'aug,': 'August',
+                'sep': 'September', 'sep,': 'September',
+                'oct': 'October', 'oct,': 'October',
+                'nov': 'November', 'nov,': 'November',
+                'dec': 'December', 'dec,': 'December'
+            };
 
-        const datePattern =
-          /(\d{1,2})\s*([a-z]{3},)\s*(\d{4})|([a-z]{3},)\s*(\d{1,2})\s*,?\s*(\d{4})/i;
-        const match = dateString.match(datePattern);
+            const datePattern = /(\d{1,2})\s*([a-z]{3},)\s*(\d{4})|([a-z]{3},)\s*(\d{1,2})\s*,?\s*(\d{4})/i;
+            const match = dateString.match(datePattern);
 
-        if (match) {
-          let day, month, year;
-          if (match[1]) {
-            day = match[1];
-            month = match[2].toLowerCase();
-            year = match[3];
-          } else {
-            day = match[5];
-            month = match[4].toLowerCase();
-            year = match[6];
-          }
+            if (match) {
+                let day, month, year;
+                if (match[1]) {
+                    day = match[1];
+                    month = match[2].toLowerCase();
+                    year = match[3];
+                } else {
+                    day = match[5];
+                    month = match[4].toLowerCase();
+                    year = match[6];
+                }
 
-          const fullMonth = monthMap[month] || month.replace(",", "");
-          return `${day} ${fullMonth} ${year}`;
+                const fullMonth = monthMap[month] || month.replace(',', '');
+                return `${day} ${fullMonth} ${year}`;
+            }
+
+            return dateString || '1 January 20';
         }
 
-        return dateString || "1 January 2024";
-      }
-
-      function generateCode() {
-        const gameName = document.getElementById("gameName").value || "XXX";
-        const developer = document.getElementById("developer").value || "";
-        const publisher = document.getElementById("publisher").value || "";
-        const releaseDateInput = document.getElementById("releaseDate").value;
-        const releaseDate = formatReleaseDate(releaseDateInput);
-        let genre =
-          document.getElementById("genre").value || "Action, Adventure";
-        const size = document.getElementById("size").value || "1.0GB";
-        const editionName = document.getElementById("editionName").value;
-        const versionNumber = document.getElementById("versionNumber").value;
-        const buildNumber = document.getElementById("buildNumber").value;
-        const dlcCount = document.getElementById("dlcCount").value;
-        const editionType =
-          document.getElementById("editionType").value ||
-          "Repack, Pre-installed, GOG Installer";
-        const source = document.getElementById("source").value;
-        const epicLink = document.getElementById("epicLink").value;
-        const gogLink = document.getElementById("gogLink").value;
-        const steamLink = document.getElementById("steamLink").value;
-        const ytLink = document.getElementById("ytLink").value;
-        const aboutGame = document.getElementById("aboutGame").value;
-        const note = document.getElementById("note").value;
-        const onlineFix = document.getElementById("onlineFix").value;
-        const serverCreation = document.getElementById("serverCreation").value;
-
-        const os = document.getElementById("os").value;
-        const ram = document.getElementById("ram").value;
-        const storage = document.getElementById("storage").value;
-        const directx = document.getElementById("directx").value;
-        const processor = document.getElementById("processor").value;
-        const graphics = document.getElementById("graphics").value;
-
-        const instructions = document.getElementById("instructions").value;
-        const installation = document.getElementById("installation").value;
-        const dlcs = document.getElementById("dlcs").value;
-        const extras = document.getElementById("extras").value;
-
-        let versionInfoParts = [];
-
-        if (versionNumber) versionInfoParts.push(`v${versionNumber}`);
-        if (buildNumber) versionInfoParts.push(`build ${buildNumber}`);
-        if (dlcCount) versionInfoParts.push(`+ ${dlcCount}DLCs`);
-
-        let versionInfo = "";
-        if (versionInfoParts.length > 0) {
-          if (versionInfoParts.length === 1) {
-            versionInfo = `(${versionInfoParts[0]})`;
-          } else if (versionInfoParts.length === 2) {
-            if (versionNumber && buildNumber) {
-              versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]})`;
+        function generateCode() {
+            const gameName = document.getElementById('gameName').value || 'XXX';
+            const developer = document.getElementById('developer').value || '';
+            const publisher = document.getElementById('publisher').value || '';
+            const releaseDateInput = document.getElementById('releaseDate').value;
+            const releaseDate = formatReleaseDate(releaseDateInput);
+            let genre = document.getElementById('genre').value || 'Action, Adventure';
+            const size = document.getElementById('size').value || '1.0GB';
+            const editionName = document.getElementById('editionName').value;
+            const versionNumber = document.getElementById('versionNumber').value;
+            const buildNumber = document.getElementById('buildNumber').value;
+            const dlcCount = document.getElementById('dlcCount').value;
+            const editionType = document.getElementById('editionType').value || 'Repack, Pre-installed, GOG Installer';
+            const source = document.getElementById('source').value;
+            const epicLink = document.getElementById('epicLink').value;
+            const gogLink = document.getElementById('gogLink').value;
+            const steamLink = document.getElementById('steamLink').value;
+            const ytLink = document.getElementById('ytLink').value;
+            const aboutGame = document.getElementById('aboutGame').value;
+            const note = document.getElementById('note').value;
+            const onlineFix = document.getElementById('onlineFix').value;
+            const serverCreation = document.getElementById('serverCreation').value;
+            
+            const os = document.getElementById('os').value;
+            const ram = document.getElementById('ram').value;
+            const storage = document.getElementById('storage').value;
+            const directx = document.getElementById('directx').value;
+            const processor = document.getElementById('processor').value;
+            const graphics = document.getElementById('graphics').value;
+            
+            const instructions = document.getElementById('instructions').value;
+            const installation = document.getElementById('installation').value;
+            const dlcs = document.getElementById('dlcs').value;
+            const extras = document.getElementById('extras').value;
+            
+            let versionInfoParts = [];
+            
+            if (versionNumber) versionInfoParts.push(`v${versionNumber}`);
+            if (buildNumber) versionInfoParts.push(`build ${buildNumber}`);
+            if (dlcCount) versionInfoParts.push(`+ ${dlcCount}DLCs`);
+            
+            let versionInfo = '';
+            if (versionInfoParts.length > 0) {
+                if (versionInfoParts.length === 1) {
+                    versionInfo = `(${versionInfoParts[0]})`;
+                } else if (versionInfoParts.length === 2) {
+                    if (versionNumber && buildNumber) {
+                        versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]})`;
+                    } else {
+                        versionInfo = `(${versionInfoParts[0]} ${versionInfoParts[1]})`;
+                    }
+                } else if (versionInfoParts.length === 3) {
+                    versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]} ${versionInfoParts[2]})`;
+                }
+            }
+            
+            let downloadTitleVersionParts = [];
+            
+            if (versionNumber) downloadTitleVersionParts.push(`v${versionNumber}`);
+            if (buildNumber) downloadTitleVersionParts.push(`build${buildNumber}`);
+            if (dlcCount) downloadTitleVersionParts.push(`+ ${dlcCount}DLCs`);
+            
+            let downloadTitleVersionInfo = '';
+            if (downloadTitleVersionParts.length > 0) {
+                if (downloadTitleVersionParts.length === 1) {
+                    downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]})`;
+                } else if (downloadTitleVersionParts.length === 2) {
+                    if (versionNumber && buildNumber) {
+                        downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${downloadTitleVersionParts[1]})`;
+                    } else {
+                        downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} ${downloadTitleVersionParts[1]})`;
+                    }
+                } else if (downloadTitleVersionParts.length === 3) {
+                    downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${downloadTitleVersionParts[1]} ${downloadTitleVersionParts[2]})`;
+                }
+            }
+            
+            let downloadTitle = `Download ${gameName}`;
+            if (editionName) downloadTitle += ` - ${editionName} Edition`;
+            if (downloadTitleVersionInfo) downloadTitle += ` ${downloadTitleVersionInfo}`;
+            
+            document.getElementById('downloadTitle').value = downloadTitle;
+            
+            const focusKeyphrase = `Download ${gameName}`;
+            document.getElementById('focusKeyphrase').value = focusKeyphrase;
+            
+            let slug = gameName.toLowerCase()
+                .replace(/[^\w\s]/gi, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+            document.getElementById('slug').value = slug;
+            
+            const imageRenamer = `download-${slug}.webp`;
+            document.getElementById('imageRenamer').value = imageRenamer;
+            
+            let devPubText = '';
+            if (developer && publisher) {
+                if (developer === publisher) {
+                    devPubText = `developed and published by ${developer}`;
+                } else {
+                    devPubText = `developed by ${developer} and published by ${publisher}`;
+                }
+            } else if (developer) {
+                devPubText = `developed by ${developer}`;
+            } else if (publisher) {
+                devPubText = `published by ${publisher}`;
+            }
+            
+            let formattedGenre = genre;
+            let genreLinks = [];
+            if (genre.includes(',')) {
+                const genres = genre.split(',').map(g => g.trim()).filter(g => g !== '');
+                if (genres.length > 0) {
+                    genres.sort();
+                    genreLinks = genres.map(g => `<a href="https://gamesleech.com/genre/${g.toLowerCase().replace(/\s+/g, '-')}/">${g}</a>`);
+                    
+                    if (genres.length > 1) {
+                        if (genres.length > 2) {
+                            formattedGenre = genres.slice(0, -1).join(', ') + ', and ' + genres[genres.length - 1];
+                        } else {
+                            formattedGenre = genres.join(' and ');
+                        }
+                    }
+                }
             } else {
-              versionInfo = `(${versionInfoParts[0]} ${versionInfoParts[1]})`;
+                genreLinks = [`<a href="https://gamesleech.com/genre/${genre.toLowerCase().replace(/\s+/g, '-')}/">${genre}</a>`];
             }
-          } else if (versionInfoParts.length === 3) {
-            versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]} ${versionInfoParts[2]})`;
-          }
-        }
-
-        let downloadTitleVersionParts = [];
-
-        if (versionNumber) downloadTitleVersionParts.push(`v${versionNumber}`);
-        if (buildNumber) downloadTitleVersionParts.push(`build${buildNumber}`);
-        if (dlcCount) downloadTitleVersionParts.push(`+ ${dlcCount}DLCs`);
-
-        let downloadTitleVersionInfo = "";
-        if (downloadTitleVersionParts.length > 0) {
-          if (downloadTitleVersionParts.length === 1) {
-            downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]})`;
-          } else if (downloadTitleVersionParts.length === 2) {
-            if (versionNumber && buildNumber) {
-              downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${downloadTitleVersionParts[1]})`;
-            } else {
-              downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} ${downloadTitleVersionParts[1]})`;
-            }
-          } else if (versionInfoParts.length === 3) {
-            downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${versionInfoParts[1]} ${downloadTitleVersionParts[2]})`;
-          }
-        }
-
-        let downloadTitle = `Download ${gameName}`;
-        if (editionName) downloadTitle += ` - ${editionName} Edition`;
-        if (downloadTitleVersionInfo)
-          downloadTitle += ` ${downloadTitleVersionInfo}`;
-
-        document.getElementById("downloadTitle").value = downloadTitle;
-
-        const focusKeyphrase = `Download ${gameName}`;
-        document.getElementById("focusKeyphrase").value = focusKeyphrase;
-
-        let slug = gameName
-          .toLowerCase()
-          .replace(/[^\w\s]/gi, "")
-          .replace(/\s+/g, "-")
-          .replace(/-+/g, "-");
-        document.getElementById("slug").value = slug;
-
-        const imageRenamer = `download-${slug}.webp`;
-        document.getElementById("imageRenamer").value = imageRenamer;
-
-        let devPubText = "";
-        if (developer && publisher) {
-          if (developer === publisher) {
-            devPubText = `developed and published by ${developer}`;
-          } else {
-            devPubText = `developed by ${developer} and published by ${publisher}`;
-          }
-        } else if (developer) {
-          devPubText = `developed by ${developer}`;
-        } else if (publisher) {
-          devPubText = `published by ${publisher}`;
-        }
-
-        let formattedGenre = genre;
-        let genreLinks = [];
-        if (genre.includes(",")) {
-          const genres = genre
-            .split(",")
-            .map((g) => g.trim())
-            .filter((g) => g !== "");
-          if (genres.length > 0) {
-            genres.sort();
-            genreLinks = genres.map(
-              (g) =>
-                `<a href="https://gamesleech.com/genre/${g
-                  .toLowerCase()
-                  .replace(/\s+/g, "-")}/">${g}</a>`
-            );
-
-            if (genres.length > 1) {
-              if (genres.length > 2) {
-                formattedGenre =
-                  genres.slice(0, -1).join(", ") +
-                  ", and " +
-                  genres[genres.length - 1];
-              } else {
-                formattedGenre = genres.join(" and ");
-              }
-            }
-          }
-        } else {
-          genreLinks = [
-            `<a href="https://gamesleech.com/genre/${genre
-              .toLowerCase()
-              .replace(/\s+/g, "-")}/">${genre}</a>`,
-          ];
-        }
-
-        let ytEmbed = "";
-        if (ytLink) {
-          let videoId = ytLink.split("v=").pop().split("&")[0].split("/").pop();
-          if (videoId) {
-            ytEmbed = `<figure class="wp-block-embed aligncenter is-provider-youtube wp-block-embed-youtube"><div class="wp-block-embed__wrapper">
+            
+            let ytEmbed = '';
+            if (ytLink) {
+                let videoId = ytLink;
+                if (ytLink.includes('youtube.com')) {
+                    const urlParams = new URLSearchParams(new URL(ytLink).search);
+                    videoId = urlParams.get('v');
+                } else if (ytLink.includes('youtu.be')) {
+                    videoId = ytLink.split('/').pop().split('?')[0];
+                }
+                
+                if (videoId) {
+                    ytEmbed = `<!-- wp:embed {"url":"https://www.youtube.com/watch?v=${videoId}","providerNameSlug":"youtube","responsive":true,"align":"center"} -->
+<figure class="wp-block-embed aligncenter is-provider-youtube wp-block-embed-youtube"><div class="wp-block-embed__wrapper">
 https://www.youtube.com/watch?v=${videoId}
 </div></figure>
-`;
-          }
-        } else {
-          ytEmbed = ``;
-        }
+<!-- /wp:embed -->`;
+                }
+            }
+            else{
+                    ytEmbed = `<!-- wp:embed {"providerNameSlug":"youtube","responsive":true,"align":"center"} /-->`;
+                }
+            let systemReqList = `<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li><strong>OS</strong>: ${os}</li>
+<!-- /wp:list-item -->
 
-        let systemReqList = `<ul class="wp-block-list"><li><strong>OS</strong>: ${os}</li>
+<!-- wp:list-item -->
 <li><strong>RAM</strong>: ${ram}</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
 <li><strong>Storage</strong>: ${storage}</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
 <li><strong>DirectX</strong>: ${directx}</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
 <li><strong>Processor</strong>: ${processor}</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
 <li><strong>Graphics</strong>: ${graphics}</li>
-</ul>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->`;
+            
+            let instructionsSection = '';
+            if (instructions) {
+                const lines = instructions.split('\n').filter(line => line.trim() !== '');
+                if (lines.length > 0) {
+                    instructionsSection = `<!-- wp:heading -->
+<h2 class="wp-block-heading">Instructions</h2>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">`;
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        if (i === lines.length - 1) {
+                            instructionsSection += `<!-- wp:list-item -->
+<li>${lines[i]}</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
+
 `;
+                        } else {
+                            instructionsSection += `<!-- wp:list-item -->
+<li>${lines[i]}</li>
+<!-- /wp:list-item -->
 
-        const createList = (lines) =>
-          lines
-            .split("\n")
-            .filter((line) => line.trim() !== "")
-            .map((line) => `\n<li>${line}</li>\n`)
-            .join("\n\n");
+`;
+                        }
+                    }
+                }
+            }
+            
+            let installationSection = '';
+            if (installation) {
+                const lines = installation.split('\n').filter(line => line.trim() !== '');
+                if (lines.length > 0) {
+                    installationSection = `<!-- wp:heading -->
+<h2 class="wp-block-heading">Installation</h2>
+<!-- /wp:heading -->
 
-        let instructionsSection = instructions
-          ? `\n<h2 class="wp-block-heading">Instructions</h2>\n\n\n\n<ul class="wp-block-list">${createList(
-              instructions
-            )}</ul>\n\n\n`
-          : "";
-        let installationSection = installation
-          ? `\n<h2 class="wp-block-heading">Installation</h2>\n\n\n\n<ul class="wp-block-list">${createList(
-              installation
-            )}</ul>\n\n\n`
-          : "";
-        let noteSection = note
-          ? `\n<p><strong><mark style="background-color:rgba(0, 0, 0, 0);color:#e40505" class="has-inline-color">Note</mark></strong>: ${note}</p>\n\n\n`
-          : "";
-        let dlcsSection = dlcs
-          ? `\n<h2 class="wp-block-heading">DLCs</h2>\n\n\n\n<ul class="wp-block-list">${createList(
-              dlcs
-            )}</ul>\n\n\n`
-          : "";
-        let extrasSection = extras
-          ? `\n<h2 class="wp-block-heading">Extras</h2>\n\n\n\n<ul class="wp-block-list">${createList(
-              extras
-            )}</ul>\n\n\n`
-          : "";
+<!-- wp:list -->
+<ul class="wp-block-list">`;
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        if (i === lines.length - 1) {
+                            installationSection += `<!-- wp:list-item -->
+<li>${lines[i]}</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
 
-        let coopSection = "";
-        if (onlineFix || serverCreation) {
-          let coopListItems = "";
-          if (onlineFix) coopListItems += createList(onlineFix);
-          if (serverCreation) {
-            coopListItems +=
-              (coopListItems ? "\n\n" : "") +
-              `\n<li><strong>Server creation</strong>:</li>\n\n\n` +
-              createList(serverCreation);
-          }
-          coopSection = `\n<h2 class="wp-block-heading">How to Play Co-Op?</h2>\n\n\n\n<ul class="wp-block-list">${coopListItems}</ul>\n\n\n`;
-        }
+`;
+                        } else {
+                            installationSection += `<!-- wp:list-item -->
+<li>${lines[i]}</li>
+<!-- /wp:list-item -->
 
-        let editionText = editionName ? `${editionName} Edition ` : "";
-        let code = `<p>Download <strong>${gameName}</strong> PC Game. Here is a direct link to download ${gameName} ${editionText}latest version ${versionInfo} for free. ${gameName} is ${devPubText}. It was released on ${releaseDate} for Windows PC and is considered one of the best in the ${formattedGenre} genre.</p>
+`;
+                        }
+                    }
+                }
+            }
+            
+            let noteSection = '';
+            if (note) {
+                noteSection = `<!-- wp:paragraph -->
+<p><strong><mark style="background-color:rgba(0, 0, 0, 0);color:#e40505" class="has-inline-color">Note</mark></strong>: ${note}</p>
+<!-- /wp:paragraph -->
+
+`;
+            }
+            
+            let dlcsSection = '';
+            if (dlcs) {
+                const lines = dlcs.split('\n').filter(line => line.trim() !== '');
+                if (lines.length > 0) {
+                    dlcsSection = `<!-- wp:heading -->
+<h2 class="wp-block-heading">DLCs</h2>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">`;
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        if (i === lines.length - 1) {
+                            dlcsSection += `<!-- wp:list-item -->
+<li>${lines[i]}</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
+
+`;
+                        } else {
+                            dlcsSection += `<!-- wp:list-item -->
+<li>${lines[i]}</li>
+<!-- /wp:list-item -->
+
+`;
+                        }
+                    }
+                }
+            }
+            
+            let extrasSection = '';
+            if (extras) {
+                const lines = extras.split('\n').filter(line => line.trim() !== '');
+                if (lines.length > 0) {
+                    extrasSection = `<!-- wp:heading -->
+<h2 class="wp-block-heading">Extras</h2>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">`;
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        if (i === lines.length - 1) {
+                            extrasSection += `<!-- wp:list-item -->
+<li>${lines[i]}</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
+
+`;
+                        } else {
+                            extrasSection += `<!-- wp:list-item -->
+<li>${lines[i]}</li>
+<!-- /wp:list-item -->
+
+`;
+                        }
+                    }
+                }
+            }
+            
+            let coopSection = '';
+            const onlineFixLines = onlineFix ? onlineFix.split('\n').filter(line => line.trim() !== '') : [];
+            const serverCreationLines = serverCreation ? serverCreation.split('\n').filter(line => line.trim() !== '') : [];
+            
+            if (onlineFixLines.length > 0 || serverCreationLines.length > 0) {
+                coopSection = `<!-- wp:heading -->
+<h2 class="wp-block-heading">How to Play Co-Op?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list">`;
+                
+                if (onlineFixLines.length > 0) {
+                    for (let i = 0; i < onlineFixLines.length - 1; i++) {
+                        coopSection += `<!-- wp:list-item -->
+<li>${onlineFixLines[i]}</li>
+<!-- /wp:list-item -->
+
+`;
+                    }
+                    
+                    if (serverCreationLines.length > 0) {
+                        coopSection += `<!-- wp:list-item -->
+<li>${onlineFixLines[onlineFixLines.length - 1]}<br><strong>Server creation</strong>:</li>
+<!-- /wp:list-item -->
+
+`;
+                        
+                        for (let i = 0; i < serverCreationLines.length; i++) {
+                            if (i === serverCreationLines.length - 1) {
+                                coopSection += `<!-- wp:list-item -->
+<li>${serverCreationLines[i]}</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
+
+`;
+                            } else {
+                                coopSection += `<!-- wp:list-item -->
+<li>${serverCreationLines[i]}</li>
+<!-- /wp:list-item -->
+
+`;
+                            }
+                        }
+                    } else {
+                        coopSection += `<!-- wp:list-item -->
+<li>${onlineFixLines[onlineFixLines.length - 1]}</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
+
+`;
+                    }
+                } else if (serverCreationLines.length > 0) {
+                    coopSection += `<!-- wp:list-item -->
+<li><strong>Server creation</strong>:</li>
+<!-- /wp:list-item -->
+
+`;
+                    
+                    for (let i = 0; i < serverCreationLines.length; i++) {
+                        if (i === serverCreationLines.length - 1) {
+                            coopSection += `<!-- wp:list-item -->
+<li>${serverCreationLines[i]}</li>
+<!-- /wp:list-item --></ul>
+<!-- /wp:list -->
+
+`;
+                        } else {
+                            coopSection += `<!-- wp:list-item -->
+<li>${serverCreationLines[i]}</li>
+<!-- /wp:list-item -->
+
+`;
+                        }
+                    }
+                }
+            }
+            
+            let platformLinks = [];
+            if (epicLink) platformLinks.push(`<a href="${epicLink}" target="_blank" rel="noreferrer noopener nofollow">Epic Games</a>`);
+            if (gogLink) platformLinks.push(`<a href="${gogLink}" target="_blank" rel="noreferrer noopener nofollow">GOG</a>`);
+            if (steamLink) platformLinks.push(`<a href="${steamLink}" target="_blank" rel="noreferrer noopener nofollow">Steam</a>`);
+            
+            let editionText = editionName ? `${editionName} Edition ` : '';
+            let code = `<!-- wp:paragraph -->
+<p>Download <strong>${gameName}</strong> PC Game. Here is a direct link to download ${gameName} ${editionText}latest version ${versionInfo} for free. ${gameName} is ${devPubText}. It was released on ${releaseDate} for Windows PC and is considered one of the best in the ${formattedGenre} genre.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
 <h2 class="wp-block-heading">Game Info</h2>
-<ul class="wp-block-list"><li><strong>Game Name</strong>: ${gameName} </li>
+<!-- /wp:heading -->
+
+<!-- wp:list -->
+<ul class="wp-block-list"><!-- wp:list-item -->
+<li><strong>Game Name</strong>: ${gameName} </li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
 <li><strong>Released</strong>: ${releaseDate}</li>
-<li><strong>Genre</strong>: ${genreLinks.join(", ")}</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li><strong>Genre</strong>: ${genreLinks.join(', ')}</li>
+<!-- /wp:list-item -->`;
+
+            if (publisher) {
+                code += `
+
+<!-- wp:list-item -->
+<li><strong>Publisher</strong>: ${publisher}</li>
+<!-- /wp:list-item -->`;
+            }
+
+            code += `
+
+<!-- wp:list-item -->
+<li><strong>Size</strong>: ${size}</li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
+<li><strong>Edition Type</strong>: ${editionType}</li>
+<!-- /wp:list-item -->`;
+
+            if (source) {
+                code += `
+
+<!-- wp:list-item -->
+<li><strong>Source</strong>: ${source}</li>
+<!-- /wp:list-item -->`;
+            }
+
+            if (platformLinks.length > 0) {
+                code += `
+                
+<!-- wp:list-item -->
+<li><strong>Available on</strong>: ${platformLinks.join(', ')}</li>
+<!-- /wp:list-item -->`;
+            }
+
+            code += `</ul>
+<!-- /wp:list -->
+
 `;
 
-        if (publisher)
-          code += `\n\n\n<li><strong>Publisher</strong>: ${publisher}</li>\n`;
-        code += `\n\n\n<li><strong>Size</strong>: ${size}</li>\n\n\n\n<li><strong>Edition Type</strong>: ${editionType}</li>\n`;
-        if (source)
-          code += `\n\n\n<li><strong>Source</strong>: ${source}</li>\n`;
-        if (platformLinks.length > 0)
-          code += `\n                \n\n<li><strong>Available on</strong>: ${platformLinks.join(
-            ", "
-          )}</li>\n`;
-        code += `</ul>\n\n\n`;
-        if (ytEmbed) code += `${ytEmbed}\n\n`;
-        code += `<h2 class="wp-block-heading has-text-align-center dl_head">${downloadTitle} for Free</h2>
-<div class="wp-block-group dl_grp">[su_accordion]
+            if (ytEmbed) {
+                code += `${ytEmbed}
+
+`;
+            }
+
+            code += `<!-- wp:heading {"textAlign":"center","className":"dl_head"} -->
+<h2 class="wp-block-heading has-text-align-center dl_head">${downloadTitle} for Free</h2>
+<!-- /wp:heading -->
+
+<!-- wp:group {"className":"dl_grp","layout":{"type":"constrained"}} -->
+<div class="wp-block-group dl_grp"><!-- wp:shortcode -->
+[su_accordion]
 [su_spoiler class="file-spoiler" title="Download as File" icon="arrow" style="fancy"]
-<div class="wp-block-buttons"><div class="wp-block-button download_file"><a class="wp-block-button__link wp-element-button" href="#" target="_blank" rel="noreferrer noopener nofollow">Download Zip (1GB)</a></div>
-</div>
+<!-- /wp:shortcode -->
+
+<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
+<div class="wp-block-buttons"><!-- wp:button {"className":"download_file"} -->
+<div class="wp-block-button download_file"><a class="wp-block-button__link wp-element-button" href="#" target="_blank" rel="noreferrer noopener nofollow">Download Zip (1GB)</a></div>
+<!-- /wp:button --></div>
+<!-- /wp:buttons -->
+
+<!-- wp:shortcode -->
 [/su_spoiler]
 [su_spoiler class="parts-spoiler" title="Download as Parts" icon="folder-1" style="fancy"]
+<!-- /wp:shortcode -->
+
+<!-- wp:paragraph -->
 <p></p>
+<!-- /wp:paragraph -->
+
+<!-- wp:shortcode -->
 [/su_spoiler]
 [/su_accordion]
-</div>
-<p class="also_read"><a href="https://gamesleech.com/download-installation-guide/">How to Download & Install Games from GamesLeech?</a> </p>
+<!-- /wp:shortcode --></div>
+<!-- /wp:group -->
+
+<!-- wp:paragraph {"className":"also_read"} -->
+<p class="also_read"><a href="https://gamesleech.com/download-installation-guide/">How to Download &amp; Install Games from GamesLeech?</a> </p>
+<!-- /wp:paragraph -->
+
 `;
-        if (installationSection) code += installationSection;
-        if (noteSection) code += noteSection;
-        if (coopSection) code += coopSection;
-        code += `[su_spoiler class="description-spoiler" title="Description" icon="plus" style="fancy"]
+
+            if (installationSection) {
+                code += installationSection;
+            }
+
+            if (noteSection) {
+                code += noteSection;
+            }
+
+            if (coopSection) {
+                code += coopSection;
+            }
+
+            code += `<!-- wp:shortcode -->
+[su_spoiler class="description-spoiler" title="Description" icon="plus" style="fancy"]
+<!-- /wp:shortcode -->
+
 `;
-        if (instructionsSection) code += instructionsSection;
-        if (dlcsSection) code += dlcsSection;
-        if (extrasSection) code += extrasSection;
-        code += `<h2 class="wp-block-heading">About Game</h2>
-<p>${aboutGame || ""}</p>
+
+            if (instructionsSection) {
+                code += instructionsSection;
+            }
+
+            if (dlcsSection) {
+                code += dlcsSection;
+            }
+
+            if (extrasSection) {
+                code += extrasSection;
+            }
+
+            code += `<!-- wp:heading -->
+<h2 class="wp-block-heading">About Game</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>${aboutGame || ''}</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
 <h2 class="wp-block-heading">System Requirements</h2>
+<!-- /wp:heading -->
+
 ${systemReqList}
 
+<!-- wp:shortcode -->
 [/su_spoiler]
+<!-- /wp:shortcode -->
+
+<!-- wp:paragraph -->
 <p></p>
-`;
+<!-- /wp:paragraph -->`;
 
-        document.getElementById("outputCode").value = code;
-      }
-
-      function copyToClipboard(buttonId, elementId = "outputCode") {
-        const element = document.getElementById(elementId);
-        element.select();
-        element.setSelectionRange(0, 99999);
-
-        navigator.clipboard
-          .writeText(element.value)
-          .then(() => {
+            document.getElementById('outputCode').value = code;
+        }
+        
+        function copyToClipboard(elementId, buttonId) {
+            const element = document.getElementById(elementId);
+            element.select();
+            document.execCommand('copy');
+            
             const copyBtn = document.getElementById(buttonId);
-            const originalText = copyBtn.textContent;
-            copyBtn.textContent = "Copied!";
-            copyBtn.classList.add("copied");
-
+            copyBtn.textContent = 'Copied!';
+            copyBtn.classList.add('copied');
+            
             setTimeout(() => {
-              copyBtn.textContent = originalText;
-              copyBtn.classList.remove("copied");
+                copyBtn.textContent = copyBtn.id === 'copyCodeBtn' ? 'Copy to Clipboard' : 
+                                      copyBtn.id === 'copyTitleBtn' ? 'Copy Title' : 
+                                      copyBtn.id === 'copyKeyphraseBtn' ? 'Copy Keyphrase' : 
+                                      copyBtn.id === 'copySlugBtn' ? 'Copy Slug' : 'Copy Image Name';
+                copyBtn.classList.remove('copied');
             }, 2000);
-          })
-          .catch((err) => {
-            console.error("Failed to copy: ", err);
-          });
-      }
+        }
     </script>
-  </body>
+</body>
 </html>
