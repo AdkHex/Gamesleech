@@ -88,6 +88,18 @@
         font-family: "Lexend", sans-serif;
       }
 
+      select{
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 14px;
+        background-color: var(--input-bg);
+        color: var(--heading-color);
+        transition: all 0.2s ease-in-out;
+        font-family: "Lexend", sans-serif;
+      }
+
       input[type="text"]::placeholder,
       textarea::placeholder {
         color: var(--text-color);
@@ -100,6 +112,13 @@
         border-color: var(--primary-accent);
         box-shadow: 0 0 0 3px rgba(56, 178, 172, 0.3);
       }
+      
+      select:focus {
+        outline: none;
+        border-color: var(--primary-accent);
+        box-shadow: 0 0 0 3px rgba(56, 178, 172, 0.3);
+      }
+
 
       textarea {
         min-height: 100px;
@@ -263,6 +282,50 @@
         animation: none;
       }
 
+      /* Image Resizer Styles */
+      .image-resizer-box {
+        margin-top: 25px;
+        padding: 20px;
+        background-color: var(--bg-color);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+      }
+      
+      .image-resizer-box h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--heading-color);
+        margin-bottom: 15px;
+      }
+      
+      .image-resizer-box input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 14px;
+        background-color: var(--input-bg);
+        color: var(--heading-color);
+        margin-bottom: 10px;
+      }
+      
+      .image-resizer-box button {
+        background-color: var(--primary-accent);
+        color: #ffffff;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.2s ease-in-out;
+      }
+      
+      .image-resizer-box button:hover {
+        background-color: var(--primary-hover);
+      }
+
       @media (max-width: 1200px) {
         .container {
           flex-direction: column;
@@ -385,11 +448,11 @@
         <div class="two-column">
           <div class="form-group">
             <label for="editionType">Edition Type:</label>
-            <input
-              type="text"
-              id="editionType"
-              placeholder="e.g., Repack, Pre-installed, GOG Installer"
-            />
+            <select id="editionType" name="Edition-Type">
+              <option value="Repack">Repack</option>
+              <option value="Pre-Installed">Pre-Installed</option>
+              <option value="GOG Installer">GOG Installer</option>
+            </select>
           </div>
 
           <div class="form-group">
@@ -489,7 +552,6 @@
                 type="text"
                 id="storage"
                 placeholder="e.g., 100 GB"
-                value="100 GB"
               />
             </div>
             <div class="req-field">
@@ -629,15 +691,11 @@
           </button>
         </div>
 
-        <div class="output-box">
-          <h3>🖼️ Image Renamer:</h3>
-          <input type="text" id="imageRenamer" readonly />
-          <button
-            id="copyImageBtn"
-            onclick="copyToClipboard('imageRenamer', 'copyImageBtn')"
-          >
-            Copy Image Name
-          </button>
+        <!-- Image Resizer Section -->
+        <div class="image-resizer-box">
+          <h3>🖼️ Image Resizer</h3>
+          <input type="text" id="imageUrlInput" placeholder="Paste image URL here" />
+          <button id="resizeBtn">Download WebP</button>
         </div>
       </div>
     </div>
@@ -720,7 +778,15 @@
             
             if (versionNumber) versionInfoParts.push(`v${versionNumber}`);
             if (buildNumber) versionInfoParts.push(`build ${buildNumber}`);
-            if (dlcCount) versionInfoParts.push(`+ ${dlcCount}DLCs`);
+            if (dlcCount){ 
+              if(dlcCount === '1'){
+                versionInfoParts.push(`DLCs`);
+                }      
+              else{
+                versionInfoParts.push(`${dlcCount} DLCs`);
+                  
+              }
+            }
             
             let versionInfo = '';
             if (versionInfoParts.length > 0) {
@@ -733,15 +799,24 @@
                         versionInfo = `(${versionInfoParts[0]} ${versionInfoParts[1]})`;
                     }
                 } else if (versionInfoParts.length === 3) {
-                    versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]} ${versionInfoParts[2]})`;
+                    versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]} + ${versionInfoParts[2]})`;
                 }
             }
             
             let downloadTitleVersionParts = [];
             
             if (versionNumber) downloadTitleVersionParts.push(`v${versionNumber}`);
-            if (buildNumber) downloadTitleVersionParts.push(`build${buildNumber}`);
-            if (dlcCount) downloadTitleVersionParts.push(`+ ${dlcCount}DLCs`);
+            if (buildNumber) downloadTitleVersionParts.push(`build ${buildNumber}`);
+            if (dlcCount){ 
+              if(dlcCount === '1'){
+                downloadTitleVersionParts.push(`DLCs`);
+                }      
+              else{
+                downloadTitleVersionParts.push(`${dlcCount} DLCs`);
+                  
+              }
+            }
+    
             
             let downloadTitleVersionInfo = '';
             if (downloadTitleVersionParts.length > 0) {
@@ -750,11 +825,18 @@
                 } else if (downloadTitleVersionParts.length === 2) {
                     if (versionNumber && buildNumber) {
                         downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${downloadTitleVersionParts[1]})`;
-                    } else {
+                    }
+                    else if(versionNumber && dlcCount) {
+                      downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} + ${downloadTitleVersionParts[1]})`;
+                    }
+                    else if(buildNumber && dlcCount) {
+                      downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} + ${downloadTitleVersionParts[1]})`;
+                    }     
+                    else {
                         downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} ${downloadTitleVersionParts[1]})`;
                     }
                 } else if (downloadTitleVersionParts.length === 3) {
-                    downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${downloadTitleVersionParts[1]} ${downloadTitleVersionParts[2]})`;
+                    downloadTitleVersionInfo = `(${downloadTitleVersionParts[0]} | ${downloadTitleVersionParts[1]} + ${downloadTitleVersionParts[2]})`;
                 }
             }
             
@@ -774,7 +856,6 @@
             document.getElementById('slug').value = slug;
             
             const imageRenamer = `download-${slug}.webp`;
-            document.getElementById('imageRenamer').value = imageRenamer;
             
             let devPubText = '';
             if (developer && publisher) {
@@ -1145,11 +1226,9 @@ https://www.youtube.com/watch?v=${videoId}
 [su_spoiler class="file-spoiler" title="Download as File" icon="arrow" style="fancy"]
 <!-- /wp:shortcode -->
 
-<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"}} -->
-<div class="wp-block-buttons"><!-- wp:button {"className":"download_file"} -->
-<div class="wp-block-button download_file"><a class="wp-block-button__link wp-element-button" href="#" target="_blank" rel="noreferrer noopener nofollow">Download Zip (1GB)</a></div>
-<!-- /wp:button --></div>
-<!-- /wp:buttons -->
+<!-- wp:paragraph -->
+<p></p>
+<!-- /wp:paragraph -->
 
 <!-- wp:shortcode -->
 [/su_spoiler]
@@ -1244,6 +1323,172 @@ ${systemReqList}
                 copyBtn.classList.remove('copied');
             }, 2000);
         }
-    </script>
+
+        // Image Resizer Functionality
+          document.getElementById('imageUrlInput').addEventListener('input', function() {
+      const url = this.value.trim();
+      const steamHeaderRegex = /https:\/\/[a-z0-9.]+steamstatic\.com\/store_item_assets\/steam\/apps\/\d+\/.+header\.jpg(\?.*)?$/i;
+      
+      if (steamHeaderRegex.test(url)) {
+        // Try format without hash folder
+        const baseUrl = url.replace(/(\/[^\/]+\/header\.jpg(\?.*)?$)/i, '/');
+        const capsuleUrl = baseUrl + 'capsule_616x353.jpg';
+        this.value = capsuleUrl;
+      }
+    });
+
+    document.getElementById('resizeBtn').addEventListener('click', async () => {
+      const originalUrl = document.getElementById('imageUrlInput').value.trim();
+      if (!originalUrl) {
+        alert('Please enter a valid image URL');
+        return;
+      }
+
+      const slug = document.getElementById('slug').value || 'game-image';
+      const btn = document.getElementById('resizeBtn');
+      const originalBtnText = btn.textContent;
+      const urlInput = document.getElementById('imageUrlInput');
+      
+      try {
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+
+        let img;
+        let finalUrl = originalUrl; // Track the final URL used
+        const steamHeaderRegex = /https:\/\/[a-z0-9.]+steamstatic\.com\/store_item_assets\/steam\/apps\/\d+\/.+header\.jpg(\?.*)?$/i;
+
+        if (steamHeaderRegex.test(originalUrl)) {
+          // Try both capsule formats sequentially
+          const baseUrl1 = originalUrl.replace(/header\.jpg(\?.*)?$/i, '');
+          const capsuleUrl1 = baseUrl1 + 'capsule_616x353.jpg';
+              
+          const baseUrl2 = originalUrl.replace(/(\/[^\/]+\/header\.jpg(\?.*)?$)/i, '/');
+          const capsuleUrl2 = baseUrl2 + 'capsule_616x353.jpg';
+
+          // Try first capsule format
+          try {
+            img = await loadImageWithTimeout(capsuleUrl1, 3000);
+            finalUrl = capsuleUrl1;
+            urlInput.value = finalUrl; // Update input with successful URL
+          } catch (e1) {
+            // If first fails, try second capsule format
+            try {
+              img = await loadImageWithTimeout(capsuleUrl2, 3000);
+              finalUrl = capsuleUrl2;
+              urlInput.value = finalUrl; // Update input with successful URL
+            } catch (e2) {
+              // If both fail, use original URL
+              img = await loadImageWithTimeout(originalUrl, 10000);
+              finalUrl = originalUrl;
+              urlInput.value = finalUrl; // Update input with fallback URL
+            }
+          }
+        } else {
+          // Not a Steam URL, just load normally
+          img = await loadImageWithTimeout(originalUrl, 15000);
+          finalUrl = originalUrl;
+          // No need to update input here as it's the same as original
+        }
+        
+        // Process the image
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const targetWidth = 1280;
+        const targetHeight = 720;
+        const maxSizeKB = 50;
+        
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+        const optimizedBlob = await optimizeImageQuality(canvas, maxSizeKB * 1024, 0.8, 0.05);
+        
+        if (!optimizedBlob) {
+          throw new Error('Could not optimize image to ≤50KB');
+        }
+
+        downloadBlob(optimizedBlob, `download-${slug}.webp`);
+        
+      } catch (error) {
+        console.error('Image processing error:', error);
+        alert(`Error: ${error.message}`);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalBtnText;
+      }
+    });
+
+    // Helper functions remain the same
+    async function loadImageWithTimeout(url, timeout) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        
+        const timer = setTimeout(() => {
+          reject(new Error(`Image loading timed out after ${timeout}ms`));
+          img.onload = img.onerror = null;
+        }, timeout);
+        
+        img.onload = () => {
+          clearTimeout(timer);
+          resolve(img);
+        };
+        
+        img.onerror = (e) => {
+          clearTimeout(timer);
+          reject(new Error('Failed to load image'));
+        };
+        
+        img.src = url;
+      });
+    }
+
+    async function optimizeImageQuality(canvas, maxBytes, initialQuality, minStep) {
+      let quality = initialQuality;
+      let bestBlob = null;
+      
+      let low = 0;
+      let high = quality;
+      
+      while (high - low > minStep) {
+        quality = (high + low) / 2;
+        const blob = await canvasToWebP(canvas, quality);
+        
+        if (blob.size <= maxBytes) {
+          bestBlob = blob;
+          low = quality;
+        } else {
+          high = quality;
+        }
+      }
+      
+      return bestBlob;
+    }
+
+    function canvasToWebP(canvas, quality) {
+      return new Promise(resolve => {
+        canvas.toBlob(
+          blob => resolve(blob), 
+          'image/webp', 
+          quality
+        );
+      });
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    }
+</script>
 </body>
 </html>
