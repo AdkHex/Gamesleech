@@ -1325,170 +1325,178 @@ ${systemReqList}
         }
 
         // Image Resizer Functionality
-          document.getElementById('imageUrlInput').addEventListener('input', function() {
-      const url = this.value.trim();
-      const steamHeaderRegex = /https:\/\/[a-z0-9.]+steamstatic\.com\/store_item_assets\/steam\/apps\/\d+\/.+header\.jpg(\?.*)?$/i;
-      
-      if (steamHeaderRegex.test(url)) {
-        // Try format without hash folder
-        const baseUrl = url.replace(/(\/[^\/]+\/header\.jpg(\?.*)?$)/i, '/');
-        const capsuleUrl = baseUrl + 'capsule_616x353.jpg';
-        this.value = capsuleUrl;
-      }
-    });
+         document.getElementById('imageUrlInput').addEventListener('input', function() {
+  const url = this.value.trim();
+  const steamHeaderRegex = /(https:\/\/[a-z0-9.]+steamstatic\.com\/store_item_assets\/steam\/apps\/\d+\/)header\.jpg(\?.*)?$/i;
+  
+  if (steamHeaderRegex.test(url)) {
+    // Replace "header.jpg" with "capsule_616x353.jpg"
+    const capsuleUrl = url.replace(/header\.jpg(\?.*)?$/i, 'capsule_616x353.jpg');
+    this.value = capsuleUrl;
+  }
+});
 
-    document.getElementById('resizeBtn').addEventListener('click', async () => {
-      const originalUrl = document.getElementById('imageUrlInput').value.trim();
-      if (!originalUrl) {
-        alert('Please enter a valid image URL');
-        return;
-      }
+document.getElementById('resizeBtn').addEventListener('click', async () => {
+  const url = document.getElementById('imageUrlInput').value.trim();
+  if (!url) {
+    alert('Please enter a valid image URL');
+    return;
+  }
 
-      const slug = document.getElementById('slug').value || 'game-image';
-      const btn = document.getElementById('resizeBtn');
-      const originalBtnText = btn.textContent;
-      const urlInput = document.getElementById('imageUrlInput');
-      
-      try {
-        btn.disabled = true;
-        btn.textContent = 'Processing...';
+  const slug = document.getElementById('slug').value || 'game-image';
+  const btn = document.getElementById('resizeBtn');
+  const originalBtnText = btn.textContent;
+  
+  try {
+    // Show loading state
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
 
-        let img;
-        let finalUrl = originalUrl; // Track the final URL used
-        const steamHeaderRegex = /https:\/\/[a-z0-9.]+steamstatic\.com\/store_item_assets\/steam\/apps\/\d+\/.+header\.jpg(\?.*)?$/i;
+    // Try to load image with fallback to original URL if capsule fails
+    const img = await loadImageWithFallback(url);
+    
+    // Create canvas
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const targetWidth = 1280;
+    const targetHeight = 720;
+    const maxSizeKB = 50;
+    
+    // Set canvas to target dimensions
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    
+    // Draw image stretched to fill canvas
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
-        if (steamHeaderRegex.test(originalUrl)) {
-          // Try both capsule formats sequentially
-          const baseUrl1 = originalUrl.replace(/header\.jpg(\?.*)?$/i, '');
-          const capsuleUrl1 = baseUrl1 + 'capsule_616x353.jpg';
-              
-          const baseUrl2 = originalUrl.replace(/(\/[^\/]+\/header\.jpg(\?.*)?$)/i, '/');
-          const capsuleUrl2 = baseUrl2 + 'capsule_616x353.jpg';
-
-          // Try first capsule format
-          try {
-            img = await loadImageWithTimeout(capsuleUrl1, 3000);
-            finalUrl = capsuleUrl1;
-            urlInput.value = finalUrl; // Update input with successful URL
-          } catch (e1) {
-            // If first fails, try second capsule format
-            try {
-              img = await loadImageWithTimeout(capsuleUrl2, 3000);
-              finalUrl = capsuleUrl2;
-              urlInput.value = finalUrl; // Update input with successful URL
-            } catch (e2) {
-              // If both fail, use original URL
-              img = await loadImageWithTimeout(originalUrl, 10000);
-              finalUrl = originalUrl;
-              urlInput.value = finalUrl; // Update input with fallback URL
-            }
-          }
-        } else {
-          // Not a Steam URL, just load normally
-          img = await loadImageWithTimeout(originalUrl, 15000);
-          finalUrl = originalUrl;
-          // No need to update input here as it's the same as original
-        }
-        
-        // Process the image
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const targetWidth = 1280;
-        const targetHeight = 720;
-        const maxSizeKB = 50;
-        
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
-        
-        ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-
-        const optimizedBlob = await optimizeImageQuality(canvas, maxSizeKB * 1024, 0.8, 0.05);
-        
-        if (!optimizedBlob) {
-          throw new Error('Could not optimize image to ≤50KB');
-        }
-
-        downloadBlob(optimizedBlob, `download-${slug}.webp`);
-        
-      } catch (error) {
-        console.error('Image processing error:', error);
-        alert(`Error: ${error.message}`);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = originalBtnText;
-      }
-    });
-
-    // Helper functions remain the same
-    async function loadImageWithTimeout(url, timeout) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        
-        const timer = setTimeout(() => {
-          reject(new Error(`Image loading timed out after ${timeout}ms`));
-          img.onload = img.onerror = null;
-        }, timeout);
-        
-        img.onload = () => {
-          clearTimeout(timer);
-          resolve(img);
-        };
-        
-        img.onerror = (e) => {
-          clearTimeout(timer);
-          reject(new Error('Failed to load image'));
-        };
-        
-        img.src = url;
-      });
+    // Optimize compression with progressive quality adjustment
+    const optimizedBlob = await optimizeImageQuality(
+      canvas, 
+      maxSizeKB * 1024, 
+      0.8,  // Start with 80% quality
+      0.05  // Minimum quality step
+    );
+    
+    if (!optimizedBlob) {
+      throw new Error('Could not optimize image to ≤50KB');
     }
 
-    async function optimizeImageQuality(canvas, maxBytes, initialQuality, minStep) {
-      let quality = initialQuality;
-      let bestBlob = null;
-      
-      let low = 0;
-      let high = quality;
-      
-      while (high - low > minStep) {
-        quality = (high + low) / 2;
-        const blob = await canvasToWebP(canvas, quality);
-        
-        if (blob.size <= maxBytes) {
-          bestBlob = blob;
-          low = quality;
-        } else {
-          high = quality;
-        }
-      }
-      
-      return bestBlob;
-    }
+    // Download the file
+    downloadBlob(
+      optimizedBlob, 
+      `download-${slug}.webp`
+    );
+    
+  } catch (error) {
+    console.error('Image processing error:', error);
+    alert(`Error: ${error.message}`);
+  } finally {
+    // Restore button state
+    btn.disabled = false;
+    btn.textContent = originalBtnText;
+  }
+});
 
-    function canvasToWebP(canvas, quality) {
-      return new Promise(resolve => {
-        canvas.toBlob(
-          blob => resolve(blob), 
-          'image/webp', 
-          quality
-        );
-      });
-    }
+async function loadImageWithFallback(url) {
+  // Check if this is a Steam capsule URL that we modified
+  const isModifiedSteamUrl = url.includes('capsule_616x353.jpg') && 
+                            url.includes('steamstatic.com/store_item_assets/steam/apps/');
+  
+  if (!isModifiedSteamUrl) {
+    // Not a Steam URL we modified, just try loading normally
+    return await loadImageWithTimeout(url, 15000);
+  }
 
-    function downloadBlob(blob, filename) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 100);
+  // This is a modified Steam URL, try it first then fallback to original
+  try {
+    // First try the capsule version
+    return await loadImageWithTimeout(url, 5000);
+  } catch (capsuleError) {
+    console.log('Capsule image failed, trying original header image');
+    
+    // If capsule fails, reconstruct original header URL
+    const originalUrl = url.replace('capsule_616x353.jpg', 'header.jpg');
+    return await loadImageWithTimeout(originalUrl, 10000);
+  }
+}
+
+async function loadImageWithTimeout(url, timeout) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    const timer = setTimeout(() => {
+      reject(new Error('Image loading timed out'));
+      img.onload = img.onerror = null;
+    }, timeout);
+    
+    img.onload = () => {
+      clearTimeout(timer);
+      resolve(img);
+    };
+    
+    img.onerror = (e) => {
+      clearTimeout(timer);
+      reject(new Error('Could not load image. Check URL/CORS.'));
+    };
+    
+    img.src = url;
+  });
+}
+
+async function optimizeImageQuality(canvas, maxBytes, initialQuality, minStep) {
+  let quality = initialQuality;
+  let step = 0.1;
+  let bestBlob = null;
+  let bestQuality = 0;
+  
+  // First try with initial quality
+  let blob = await canvasToWebP(canvas, quality);
+  if (blob.size <= maxBytes) return blob;
+  
+  // Binary search for optimal quality
+  let low = 0;
+  let high = quality;
+  
+  while (high - low > minStep) {
+    quality = (high + low) / 2;
+    blob = await canvasToWebP(canvas, quality);
+    
+    if (blob.size <= maxBytes) {
+      bestBlob = blob;
+      bestQuality = quality;
+      low = quality; // Try higher quality
+    } else {
+      high = quality; // Try lower quality
     }
+  }
+  
+  return bestBlob;
+}
+
+function canvasToWebP(canvas, quality) {
+  return new Promise(resolve => {
+    canvas.toBlob(
+      blob => resolve(blob), 
+      'image/webp', 
+      quality
+    );
+  });
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
+}
 </script>
 </body>
 </html>
