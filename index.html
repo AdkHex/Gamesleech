@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WordPress Game Post Generator</title>
+    <title>Steam Game Post Generator</title>
+    <link rel="icon" href="https://i.pinimg.com/736x/e8/2b/25/e82b2500560810d8d0589d6710c15815.jpg" type="image/x-icon">
+
     <style>
         :root {
         --bg-color: #1a202c;
@@ -357,7 +359,7 @@
 </head>
 <body>
     <div class="header">
-      <h1>🎮 Game Post Generator 🎮</h1>
+      <h1>🎮 Steam Game Post Generator 🎮</h1>
       <p> © blackHAWK</p>
     </div>
 
@@ -651,6 +653,14 @@
 
       <div class="output-section">
         <div class="output-box">
+          <h3>spydata</h3>
+          <textarea id="listData"></textarea>
+          <button id="gameBtn" onclick="gameList()">
+          Insert Data
+          </button>
+        </div>
+
+        <div class="output-box">
           <h3>📄 WordPress Post Code:</h3>
           <textarea id="outputCode" readonly></textarea>
           <button id="copyCodeBtn" onclick="copyToClipboard('outputCode', 'copyCodeBtn')">
@@ -739,6 +749,42 @@
             return dateString || '1 January 20';
         }
 
+        function gameList() {
+            const input = document.getElementById('listData').value;
+            const list = input.match(/"([^"]*)"/g)?.map(item => item.replace(/"/g, '')) || [];
+            if(list.length < 12) {
+                alert('Please ensure the input has at least 12 items.');
+                return;
+            }
+            const gameName = list[0] || '';
+            document.getElementById('gameName').value = gameName;
+            const developer = list[1] || '';
+            document.getElementById('developer').value = developer;
+            const publisher = list[2] || '';
+            document.getElementById('publisher').value = publisher;
+
+            const releaseDateInput = list[3] || '';
+            const releaseDate = formatReleaseDate(releaseDateInput);
+            document.getElementById('releaseDate').value = releaseDate;
+
+            let genre = list[4] || '';
+            document.getElementById('genre').value = genre;
+            const os = list[5] || '';
+            document.getElementById('os').value = os;
+            const ram = list[6] || '';
+            document.getElementById('ram').value = ram;
+            const storage = list[7] || '';
+            document.getElementById('storage').value = storage;
+            const directx = list[8] || '';
+            document.getElementById('directx').value = directx;
+            const processor = list[9] || '';
+            document.getElementById('processor').value = processor;
+            const graphics = list[10] || '';
+            document.getElementById('graphics').value = graphics;
+            const aboutGame = list[11] || '';
+            document.getElementById('aboutGame').value = aboutGame;
+        }
+
         function generateCode() {
             const gameName = document.getElementById('gameName').value || 'XXX';
             const developer = document.getElementById('developer').value || '';
@@ -796,7 +842,7 @@
                     if (versionNumber && buildNumber) {
                         versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]})`;
                     } else {
-                        versionInfo = `(${versionInfoParts[0]} ${versionInfoParts[1]})`;
+                        versionInfo = `(${versionInfoParts[0]} + ${versionInfoParts[1]})`;
                     }
                 } else if (versionInfoParts.length === 3) {
                     versionInfo = `(${versionInfoParts[0]} | ${versionInfoParts[1]} + ${versionInfoParts[2]})`;
